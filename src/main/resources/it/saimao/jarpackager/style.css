@@ -1,6 +1,6 @@
-/* 纯黑色主题样式 */
+/* 改进的暗色主题样式，确保文本清晰易读 */
 .root {
-    -fx-background-color: #000000;
+    -fx-background-color: #1e1e1e;
     -fx-font-family: "Segoe UI", sans-serif;
 }
 
@@ -8,7 +8,7 @@
 .title-label {
     -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-text-fill: #00ff00;
+    -fx-text-fill: #ffffff;
     -fx-padding: 0 0 10 0;
 }
 
@@ -22,17 +22,17 @@
 }
 
 .tab {
-    -fx-background-color: #1a1a1a;
+    -fx-background-color: #2d2d2d;
     -fx-padding: 8 15 8 15;
     -fx-background-radius: 5 5 0 0;
 }
 
 .tab:selected {
-    -fx-background-color: #003366;
+    -fx-background-color: #3a7ca5;
 }
 
 .tab-label {
-    -fx-text-fill: #00ff00;
+    -fx-text-fill: #ffffff;
     -fx-font-weight: bold;
 }
 
@@ -42,141 +42,141 @@
 }
 
 .titled-pane > .title {
-    -fx-background-color: #003366;
+    -fx-background-color: #3a7ca5;
     -fx-padding: 5 10 5 10;
 }
 
 .titled-pane > .title > .label {
-    -fx-text-fill: #00ff00;
+    -fx-text-fill: #ffffff;
     -fx-font-weight: bold;
 }
 
 .titled-pane > .content {
-    -fx-border-color: #00ff00;
+    -fx-border-color: #3a7ca5;
     -fx-border-width: 0 1 1 1;
-    -fx-background-color: #1a1a1a;
+    -fx-background-color: #2d2d2d;
 }
 
 /* 按钮样式 */
 .button {
-    -fx-background-color: #003366;
-    -fx-text-fill: #00ff00;
+    -fx-background-color: #3a7ca5;
+    -fx-text-fill: #ffffff;
     -fx-font-weight: bold;
     -fx-background-radius: 4;
     -fx-padding: 5 15 5 15;
 }
 
 .button:hover {
-    -fx-background-color: #0066cc;
+    -fx-background-color: #4a9bc9;
 }
 
 .button:pressed {
-    -fx-background-color: #001a33;
+    -fx-background-color: #2a5c7a;
 }
 
 /* 文本框样式 */
 .text-field {
-    -fx-border-color: #00ff00;
+    -fx-border-color: #5a9cb9;
     -fx-border-width: 1;
-    -fx-background-color: #1a1a1a;
+    -fx-background-color: #3c3c3c;
     -fx-padding: 5;
     -fx-background-radius: 4;
-    -fx-text-fill: #00ff00;
+    -fx-text-fill: #ffffff;
 }
 
 .text-field:focused {
-    -fx-border-color: #00ff00;
-    -fx-effect: dropshadow(gaussian, rgba(0, 255, 0, 0.5), 5, 0, 0, 0);
+    -fx-border-color: #7ab6d6;
+    -fx-effect: dropshadow(gaussian, rgba(122, 182, 214, 0.5), 5, 0, 0, 0);
 }
 
 /* 标签样式 */
 .label {
-    -fx-text-fill: #00ff00;
+    -fx-text-fill: #e0e0e0;
     -fx-font-size: 12px;
 }
 
 .label.required {
-    -fx-text-fill: #ff0000;
+    -fx-text-fill: #ff6b6b;
     -fx-font-weight: bold;
 }
 
 /* 下拉框样式 */
 .combo-box {
-    -fx-border-color: #00ff00;
-    -fx-background-color: #1a1a1a;
+    -fx-border-color: #5a9cb9;
+    -fx-background-color: #3c3c3c;
     -fx-background-radius: 4;
 }
 
 .combo-box .arrow-button {
-    -fx-background-color: #003366;
+    -fx-background-color: #3a7ca5;
 }
 
 .combo-box .arrow {
-    -fx-background-color: #00ff00;
+    -fx-background-color: #ffffff;
 }
 
 .combo-box-base:hover {
-    -fx-border-color: #00ff00;
+    -fx-border-color: #7ab6d6;
 }
 
 .combo-box-base:focused {
-    -fx-border-color: #00ff00;
-    -fx-effect: dropshadow(gaussian, rgba(0, 255, 0, 0.5), 5, 0, 0, 0);
+    -fx-border-color: #7ab6d6;
+    -fx-effect: dropshadow(gaussian, rgba(122, 182, 214, 0.5), 5, 0, 0, 0);
 }
 
 .combo-box .list-view {
-    -fx-background-color: #1a1a1a;
+    -fx-background-color: #3c3c3c;
 }
 
 .combo-box .list-view .list-cell {
-    -fx-background-color: #1a1a1a;
-    -fx-text-fill: #00ff00;
+    -fx-background-color: #3c3c3c;
+    -fx-text-fill: #ffffff;
 }
 
 .combo-box .list-view .list-cell:hover {
-    -fx-background-color: #003366;
+    -fx-background-color: #3a7ca5;
 }
 
 /* 进度条样式 */
 .progress-bar {
-    -fx-accent: #00ff00;
+    -fx-accent: #3a7ca5;
 }
 
 .progress-bar .bar {
-    -fx-background-color: #00ff00;
+    -fx-background-color: #3a7ca5;
     -fx-background-insets: 0;
     -fx-background-radius: 3;
 }
 
 .progress-bar .track {
-    -fx-background-color: #1a1a1a;
+    -fx-background-color: #3c3c3c;
     -fx-background-insets: 0;
     -fx-background-radius: 3;
 }
 
 /* 文本区域样式 */
 .text-area {
-    -fx-border-color: #00ff00;
-    -fx-background-color: #1a1a1a;
+    -fx-border-color: #5a9cb9;
+    -fx-background-color: #3c3c3c;
     -fx-background-radius: 4;
-    -fx-text-fill: #00ff00;
+    -fx-text-fill: #ffffff;
 }
 
 .text-area .content {
-    -fx-background-color: #1a1a1a;
-    -fx-text-fill: #00ff00;
+    -fx-background-color: #3c3c3c;
+    -fx-text-fill: #ffffff;
 }
 
 .text-area:focused {
-    -fx-border-color: #00ff00;
-    -fx-effect: dropshadow(gaussian, rgba(0, 255, 0, 0.5), 5, 0, 0, 0);
+    -fx-border-color: #7ab6d6;
+    -fx-effect: dropshadow(gaussian, rgba(122, 182, 214, 0.5), 5, 0, 0, 0);
 }
 
 /* 网格面板样式 */
 .grid-pane {
-    -fx-background-color: #1a1a1a;
+    -fx-background-color: #2d2d2d;
     -fx-padding: 10;
-    -fx-border-color: #003366;
+    -fx-border-color: #3a7ca5;
     -fx-border-width: 1;
     -fx-border-radius: 5;
     -fx-background-radius: 5;

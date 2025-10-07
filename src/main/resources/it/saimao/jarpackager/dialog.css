@@ -1,49 +1,49 @@
-/* 纯黑色主题进度对话框样式 */
+/* 改进的暗色主题进度对话框样式，确保文本清晰易读 */
 .root {
-    -fx-background-color: #000000;
+    -fx-background-color: #1e1e1e;
     -fx-font-family: "Segoe UI", sans-serif;
 }
 
 .label {
-    -fx-text-fill: #00ff00;
+    -fx-text-fill: #ffffff;
     -fx-font-weight: bold;
     -fx-font-size: 14px;
 }
 
 .progress-bar {
-    -fx-accent: #00ff00;
+    -fx-accent: #3a7ca5;
 }
 
 .progress-bar .bar {
-    -fx-background-color: #00ff00;
+    -fx-background-color: #3a7ca5;
     -fx-background-insets: 0;
     -fx-background-radius: 3;
 }
 
 .progress-bar .track {
-    -fx-background-color: #1a1a1a;
+    -fx-background-color: #3c3c3c;
     -fx-background-insets: 0;
     -fx-background-radius: 3;
 }
 
 .text-area {
-    -fx-border-color: #00ff00;
-    -fx-background-color: #1a1a1a;
+    -fx-border-color: #5a9cb9;
+    -fx-background-color: #3c3c3c;
     -fx-background-radius: 4;
     -fx-font-family: "Monospaced";
     -fx-font-size: 12px;
-    -fx-text-fill: #00ff00;
+    -fx-text-fill: #ffffff;
 }
 
 .text-area .content {
-    -fx-background-color: #1a1a1a;
-    -fx-text-fill: #00ff00;
+    -fx-background-color: #3c3c3c;
+    -fx-text-fill: #ffffff;
 }
 
 .text-area .scroll-pane {
-    -fx-background-color: #1a1a1a;
+    -fx-background-color: #3c3c3c;
 }
 
 .text-area .scroll-pane .viewport {
-    -fx-background-color: #1a1a1a;
+    -fx-background-color: #3c3c3c;
 }
