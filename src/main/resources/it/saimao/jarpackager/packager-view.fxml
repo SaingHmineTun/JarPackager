@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="15.0" xmlns:fx="http://javafx.com/fxml" fx:controller="it.saimao.jarpackager.PackagerController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+    </padding>
+    
+    <Label text="JAR to EXE/MSI Packager" style="-fx-font-weight: bold;">
+        <font>
+            <Font size="18.0"/>
+        </font>
+    </Label>
+    
+    <!-- JAR Selection Section -->
+    <TitledPane text="JAR File Selection" expanded="true">
+        <VBox spacing="10.0">
+            <HBox spacing="5.0" alignment="CENTER_LEFT">
+                <Label text="Select JAR File:"/>
+                <TextField fx:id="jarFileField" HBox.hgrow="ALWAYS"/>
+                <Button text="Browse..." onAction="#browseJarFile"/>
+                <Button text="Analyze" onAction="#analyzeJarFile"/>
+            </HBox>
+            <ProgressBar fx:id="analysisProgress" visible="false" managed="false"/>
+        </VBox>
+    </TitledPane>
+    
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <VBox spacing="15.0">
+            <GridPane hgap="10.0" vgap="10.0">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="100.0" />
+                    <ColumnConstraints hgrow="ALWAYS" />
+                </columnConstraints>
+                
+                <Label text="Input Directory:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <TextField fx:id="inputDirField" HBox.hgrow="ALWAYS"/>
+                    <Button text="Browse..." onAction="#browseInputDir"/>
+                </HBox>
+                
+                <Label text="Destination Directory:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <TextField fx:id="destDirField" HBox.hgrow="ALWAYS"/>
+                    <Button text="Browse..." onAction="#browseDestDir"/>
+                </HBox>
+                
+                <Label text="Application Name:*" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <TextField fx:id="appNameField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                
+                <Label text="App Version:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                <TextField fx:id="appVersionField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                
+                <Label text="Main Class:*" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                <TextField fx:id="mainClassField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                
+                <Label text="Main JAR File:*" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                    <TextField fx:id="mainJarField" HBox.hgrow="ALWAYS"/>
+                    <Button text="Browse..." onAction="#browseMainJar"/>
+                </HBox>
+                
+                <Label text="Package Type:" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+                <ComboBox fx:id="packageTypeCombo" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                
+                <Label text="Icon File:" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                    <TextField fx:id="iconField" HBox.hgrow="ALWAYS"/>
+                    <Button text="Browse..." onAction="#browseIcon"/>
+                </HBox>
+                
+                <Label text="Vendor:" GridPane.columnIndex="0" GridPane.rowIndex="8"/>
+                <TextField fx:id="vendorField" GridPane.columnIndex="1" GridPane.rowIndex="8"/>
+                
+                <Label text="Copyright:" GridPane.columnIndex="0" GridPane.rowIndex="9"/>
+                <TextField fx:id="copyrightField" GridPane.columnIndex="1" GridPane.rowIndex="9"/>
+                
+                <Label text="Description:" GridPane.columnIndex="0" GridPane.rowIndex="10"/>
+                <TextField fx:id="descriptionField" GridPane.columnIndex="1" GridPane.rowIndex="10"/>
+                
+                <Label text="License File:" GridPane.columnIndex="0" GridPane.rowIndex="11"/>
+                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="11">
+                    <TextField fx:id="licenseField" HBox.hgrow="ALWAYS"/>
+                    <Button text="Browse..." onAction="#browseLicense"/>
+                </HBox>
+                
+                <Label text="Upgrade UUID:" GridPane.columnIndex="0" GridPane.rowIndex="12"/>
+                <TextField fx:id="upgradeUuidField" GridPane.columnIndex="1" GridPane.rowIndex="12"/>
+                
+                <Label text="Menu Group:" GridPane.columnIndex="0" GridPane.rowIndex="13"/>
+                <TextField fx:id="menuGroupField" GridPane.columnIndex="1" GridPane.rowIndex="13"/>
+                
+                <Label text="Java Options:" GridPane.columnIndex="0" GridPane.rowIndex="14"/>
+                <TextField fx:id="javaOptionsField" GridPane.columnIndex="1" GridPane.rowIndex="14"/>
+                
+                <Label text="Add Modules:" GridPane.columnIndex="0" GridPane.rowIndex="15"/>
+                <TextField fx:id="addModulesField" GridPane.columnIndex="1" GridPane.rowIndex="15"/>
+            </GridPane>
+            
+            <HBox spacing="10.0" alignment="CENTER_RIGHT">
+                <Button text="Package" onAction="#packageApp" style="-fx-font-weight: bold;"/>
+            </HBox>
+        </VBox>
+    </ScrollPane>
+    
+    <TextArea fx:id="outputArea" prefRowCount="8" editable="false"/>
+</VBox>
