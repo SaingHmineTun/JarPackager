@@ -1,0 +1,188 @@
+/* 纯黑色主题样式 */
+.root {
+    -fx-background-color: #000000;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+/* 标题样式 */
+.title-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #00ff00;
+    -fx-padding: 0 0 10 0;
+}
+
+/* TabPane 样式 */
+.tab-pane {
+    -fx-background-color: transparent;
+}
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.tab {
+    -fx-background-color: #1a1a1a;
+    -fx-padding: 8 15 8 15;
+    -fx-background-radius: 5 5 0 0;
+}
+
+.tab:selected {
+    -fx-background-color: #003366;
+}
+
+.tab-label {
+    -fx-text-fill: #00ff00;
+    -fx-font-weight: bold;
+}
+
+/* TitledPane 样式 */
+.titled-pane {
+    -fx-background-color: transparent;
+}
+
+.titled-pane > .title {
+    -fx-background-color: #003366;
+    -fx-padding: 5 10 5 10;
+}
+
+.titled-pane > .title > .label {
+    -fx-text-fill: #00ff00;
+    -fx-font-weight: bold;
+}
+
+.titled-pane > .content {
+    -fx-border-color: #00ff00;
+    -fx-border-width: 0 1 1 1;
+    -fx-background-color: #1a1a1a;
+}
+
+/* 按钮样式 */
+.button {
+    -fx-background-color: #003366;
+    -fx-text-fill: #00ff00;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4;
+    -fx-padding: 5 15 5 15;
+}
+
+.button:hover {
+    -fx-background-color: #0066cc;
+}
+
+.button:pressed {
+    -fx-background-color: #001a33;
+}
+
+/* 文本框样式 */
+.text-field {
+    -fx-border-color: #00ff00;
+    -fx-border-width: 1;
+    -fx-background-color: #1a1a1a;
+    -fx-padding: 5;
+    -fx-background-radius: 4;
+    -fx-text-fill: #00ff00;
+}
+
+.text-field:focused {
+    -fx-border-color: #00ff00;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 0, 0.5), 5, 0, 0, 0);
+}
+
+/* 标签样式 */
+.label {
+    -fx-text-fill: #00ff00;
+    -fx-font-size: 12px;
+}
+
+.label.required {
+    -fx-text-fill: #ff0000;
+    -fx-font-weight: bold;
+}
+
+/* 下拉框样式 */
+.combo-box {
+    -fx-border-color: #00ff00;
+    -fx-background-color: #1a1a1a;
+    -fx-background-radius: 4;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: #003366;
+}
+
+.combo-box .arrow {
+    -fx-background-color: #00ff00;
+}
+
+.combo-box-base:hover {
+    -fx-border-color: #00ff00;
+}
+
+.combo-box-base:focused {
+    -fx-border-color: #00ff00;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 0, 0.5), 5, 0, 0, 0);
+}
+
+.combo-box .list-view {
+    -fx-background-color: #1a1a1a;
+}
+
+.combo-box .list-view .list-cell {
+    -fx-background-color: #1a1a1a;
+    -fx-text-fill: #00ff00;
+}
+
+.combo-box .list-view .list-cell:hover {
+    -fx-background-color: #003366;
+}
+
+/* 进度条样式 */
+.progress-bar {
+    -fx-accent: #00ff00;
+}
+
+.progress-bar .bar {
+    -fx-background-color: #00ff00;
+    -fx-background-insets: 0;
+    -fx-background-radius: 3;
+}
+
+.progress-bar .track {
+    -fx-background-color: #1a1a1a;
+    -fx-background-insets: 0;
+    -fx-background-radius: 3;
+}
+
+/* 文本区域样式 */
+.text-area {
+    -fx-border-color: #00ff00;
+    -fx-background-color: #1a1a1a;
+    -fx-background-radius: 4;
+    -fx-text-fill: #00ff00;
+}
+
+.text-area .content {
+    -fx-background-color: #1a1a1a;
+    -fx-text-fill: #00ff00;
+}
+
+.text-area:focused {
+    -fx-border-color: #00ff00;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 0, 0.5), 5, 0, 0, 0);
+}
+
+/* 网格面板样式 */
+.grid-pane {
+    -fx-background-color: #1a1a1a;
+    -fx-padding: 10;
+    -fx-border-color: #003366;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+/* VBox 样式 */
+.vbox {
+    -fx-spacing: 15;
+}

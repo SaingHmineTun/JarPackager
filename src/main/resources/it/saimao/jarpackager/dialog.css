@@ -1,0 +1,49 @@
+/* 纯黑色主题进度对话框样式 */
+.root {
+    -fx-background-color: #000000;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.label {
+    -fx-text-fill: #00ff00;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.progress-bar {
+    -fx-accent: #00ff00;
+}
+
+.progress-bar .bar {
+    -fx-background-color: #00ff00;
+    -fx-background-insets: 0;
+    -fx-background-radius: 3;
+}
+
+.progress-bar .track {
+    -fx-background-color: #1a1a1a;
+    -fx-background-insets: 0;
+    -fx-background-radius: 3;
+}
+
+.text-area {
+    -fx-border-color: #00ff00;
+    -fx-background-color: #1a1a1a;
+    -fx-background-radius: 4;
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 12px;
+    -fx-text-fill: #00ff00;
+}
+
+.text-area .content {
+    -fx-background-color: #1a1a1a;
+    -fx-text-fill: #00ff00;
+}
+
+.text-area .scroll-pane {
+    -fx-background-color: #1a1a1a;
+}
+
+.text-area .scroll-pane .viewport {
+    -fx-background-color: #1a1a1a;
+}

@@ -9,22 +9,13 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
@@ -40,7 +31,8 @@ public class PackagerController {
     private TextField inputDirField;
 
     @FXML
-    private TextField destDirField;
+    private
+    TextField destDirField;
 
     @FXML
     private TextField appNameField;
@@ -52,7 +44,7 @@ public class PackagerController {
     private TextField mainClassField;
 
     @FXML
-    private TextField mainJarField;
+  private TextField mainJarField;
 
     @FXML
     private ComboBox<String> packageTypeCombo;
@@ -84,8 +76,9 @@ public class PackagerController {
     @FXML
     private TextField addModulesField;
 
+    // 添加对TabPane的引用
     @FXML
-    private TextArea outputArea;
+    private TabPane mainTabPane;
 
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
     private Stage primaryStage;
@@ -115,13 +108,13 @@ public class PackagerController {
     private void analyzeJarFile(ActionEvent event) {
         String jarFilePath = jarFileField.getText();
         if (jarFilePath.isEmpty()) {
-            showAlert(Alert.AlertType.ERROR, "NoJAR File", "Please select a JAR file first.");
+            showAlert(Alert.AlertType.ERROR, "No JAR File", "Please select a JAR file first.");
             return;
         }
 
         File jarFile = new File(jarFilePath);
         if (!jarFile.exists()) {
-            showAlert(Alert.AlertType.ERROR, "File Not Found", "Theselected JAR file does not exist.");
+            showAlert(Alert.AlertType.ERROR, "File Not Found", "The selected JAR file does not exist.");
             return;
         }
 
@@ -131,7 +124,7 @@ public class PackagerController {
         analysisProgress.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
 
         // Run analysis in background thread
-        executorService.submit(() -> analyzeJarInBackground(jarFile));
+        executorService.submit(() ->analyzeJarInBackground(jarFile));
     }
 
     private void analyzeJarInBackground(File jarFile) {
@@ -142,7 +135,7 @@ public class PackagerController {
             String mainClass = null;
 
             if (manifest != null) {
-                Attributes attributes = manifest.getMainAttributes();
+              Attributes attributes = manifest.getMainAttributes();
                 mainClass = attributes.getValue("Main-Class");
             }
             final String finalMainClass = mainClass;
@@ -155,114 +148,28 @@ public class PackagerController {
                 }
 
                 // Set main jar file name
-                mainJarField.setText(jarFile.getName());
+                mainJarField.setText(jarFile.getAbsolutePath());
 
                 // Set input directory
                 inputDirField.setText(jarFile.getParent());
-                
+
                 // Set destination directory to same as input by default
                 destDirField.setText(jarFile.getParent());
 
-                hideProgressIndicator();
-                showAlert(Alert.AlertType.INFORMATION, "Analysis Complete", "JAR file analyzedsuccessfully. Fields populated where possible.");
+hideProgressIndicator();
+                showAlert(Alert.AlertType.INFORMATION, "Analysis Complete", "JAR file analyzed successfully. Fields populated where possible.");
             });
 
             jar.close();
         } catch (Exception e) {
             Platform.runLater(() -> {
                 hideProgressIndicator();
-                showAlert(Alert.AlertType.ERROR, "Analysis Error",
+                showAlert(Alert.AlertType.ERROR, "AnalysisError",
                         "Error analyzing JAR file: " + e.getMessage());
             });
         }
     }
 
-    private MavenInfo getMavenInfoForJar(File jarFile) {
-        try {
-            // Look for pom.xml in the same directory as the JAR file
-            File jarDirectory = jarFile.getParentFile();
-            File pomFile = new File(jarDirectory, "pom.xml");
-
-            if (!pomFile.exists()) {
-                // Try to find pom.xml in parent directories
-                pomFile = findPomFile(jarDirectory);
-            }
-
-            if (pomFile != null && pomFile.exists()) {
-                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder builder = factory.newDocumentBuilder();
-                Document document = builder.parse(pomFile);
-                document.getDocumentElement().normalize();
-
-                String version = null;
-                String groupId = null;
-                String artifactId = null;
-                String name = null;
-
-                NodeList versionNodes = document.getElementsByTagName("version");
-                if (versionNodes.getLength() > 0) {
-                    Node versionNode = versionNodes.item(0);
-                    if (versionNode.getNodeType() == Node.ELEMENT_NODE) {
-                        Element versionElement = (Element) versionNode;
-                        version = versionElement.getTextContent();
-                    }
-                }
-
-                NodeList groupIdNodes = document.getElementsByTagName("groupId");
-                if (groupIdNodes.getLength() > 0) {
-                    Node groupIdNode = groupIdNodes.item(0);
-                    if (groupIdNode.getNodeType() == Node.ELEMENT_NODE) {
-                        Element groupIdElement = (Element) groupIdNode;
-                        groupId = groupIdElement.getTextContent();
-                    }
-                }
-
-                NodeList artifactIdNodes = document.getElementsByTagName("artifactId");
-                if (artifactIdNodes.getLength() > 0) {
-                    Node artifactIdNode = artifactIdNodes.item(0);
-                    if (artifactIdNode.getNodeType() == Node.ELEMENT_NODE) {
-                        Element artifactIdElement = (Element) artifactIdNode;
-                        artifactId = artifactIdElement.getTextContent();
-                    }
-                }
-
-                NodeList nameNodes = document.getElementsByTagName("name");
-                if (nameNodes.getLength() > 0) {
-                    Node nameNode = nameNodes.item(0);
-                    if (nameNode.getNodeType() == Node.ELEMENT_NODE) {
-                        Element nameElement = (Element) nameNode;
-                        name = nameElement.getTextContent();
-                    }
-                }
-
-                return new MavenInfo(version, groupId, artifactId, name);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private File findPomFile(File directory) {
-        if (directory == null) {
-            return null;
-        }
-
-        File pomFile = new File(directory, "pom.xml");
-        if (pomFile.exists()) {
-            return pomFile;
-        }
-
-        // Look in parent directory
-        return findPomFile(directory.getParentFile());
-    }
-
-    private String getArtifactIdFromFileName(String fileName) {
-        if (fileName.endsWith(".jar")) {
-            return fileName.substring(0, fileName.length() - 4); // Remove .jar extension
-        }
-        return fileName;
-    }
 
     private void hideProgressIndicator() {
         analysisProgress.setVisible(false);
@@ -271,7 +178,7 @@ public class PackagerController {
 
     @FXML
     private void browseInputDir(ActionEvent event) {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
+        DirectoryChooser directoryChooser =new DirectoryChooser();
         directoryChooser.setTitle("Select Input Directory");
         File selectedDirectory = directoryChooser.showDialog(inputDirField.getScene().getWindow());
         if (selectedDirectory != null) {
@@ -280,8 +187,8 @@ public class PackagerController {
     }
 
     @FXML
-    private void browseDestDir(ActionEvent event) {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
+    private void browseDestDir(ActionEvent event){
+       DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Select Destination Directory");
         File selectedDirectory = directoryChooser.showDialog(destDirField.getScene().getWindow());
         if (selectedDirectory != null) {
@@ -292,10 +199,10 @@ public class PackagerController {
     @FXML
     private void browseMainJar(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("SelectMainJAR File");
+        fileChooser.setTitle("Select Main JAR File");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JAR Files", "*.jar"));
         File selectedFile = fileChooser.showOpenDialog(mainJarField.getScene().getWindow());
-        if (selectedFile != null) {
+if (selectedFile != null) {
             mainJarField.setText(selectedFile.getName());
         }
     }
@@ -307,30 +214,30 @@ public class PackagerController {
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Icon Files", "*.ico"));
         File selectedFile = fileChooser.showOpenDialog(iconField.getScene().getWindow());
         if (selectedFile != null) {
-            iconField.setText(selectedFile.getName());
+            iconField.setText(selectedFile.getAbsolutePath());
         }
     }
 
     @FXML
     private void browseLicense(ActionEvent event) {
-        FileChooser fileChooser = new FileChooser();
+        FileChooser fileChooser= new FileChooser();
         fileChooser.setTitle("Select License File");
         File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow());
         if (selectedFile != null) {
-            licenseField.setText(selectedFile.getName());
+            licenseField.setText(selectedFile.getAbsolutePath());
         }
     }
 
     @FXML
-    private void packageApp(ActionEvent event) {
-        //Validate inputs
+    private void packageApp(ActionEvent event){
+//Validate inputs
         if (inputDirField.getText().isEmpty() ||
                 appNameField.getText().isEmpty() ||
                 mainClassField.getText().isEmpty() ||
                 mainJarField.getText().isEmpty()) {
 
             showAlert(Alert.AlertType.ERROR, "Missing Required Fields",
-                    "Please fill inall required fields (Input Directory,Application Name, Main Class, Main JAR)");
+                    "Please fill in all required fields (InputDirectory, Application Name, Main Class, Main JAR)");
             return;
         }
 
@@ -340,7 +247,7 @@ public class PackagerController {
 
     private void executePackagingTask() {
         // 创建并显示进度对话框
-        ProgressController progressController = new ProgressController();
+        ProgressController progressController=new ProgressController();
         Platform.runLater(() -> {
             progressController.showProgressDialog(primaryStage);
             progressController.appendText("Executing packaging command...\n\n");
@@ -360,7 +267,7 @@ public class PackagerController {
                 progressController.appendText(commandStr.toString().trim() + "\n\n");
             });
 
-            ProcessBuilder processBuilder = new ProcessBuilder(command);
+ProcessBuilder processBuilder = new ProcessBuilder(command);
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
 
@@ -368,42 +275,42 @@ public class PackagerController {
             String line;
             while ((line = reader.readLine()) != null) {
                 final String logLine = line;
-                Platform.runLater(() -> progressController.appendText(logLine + "\n"));
+                Platform.runLater(()-> progressController.appendText(logLine + "\n"));
             }
 
             int exitCode = process.waitFor();
             if (exitCode == 0) {
                 String destDir = destDirField.getText().isEmpty() ? inputDirField.getText() : destDirField.getText();
                 String packageType = packageTypeCombo.getValue();
-                String appName = appNameField.getText();
+String appName = appNameField.getText();
                 String outputFile = destDir + File.separator + appName + "." + packageType;
-                
+
                 Platform.runLater(() -> {
                     progressController.appendText("\nPackaging completed successfully!\n");
                     progressController.appendText("Output file saved to: " + outputFile + "\n");
-                    progressController.setCompleted();
+                   progressController.setCompleted();
                     showAlert(Alert.AlertType.INFORMATION, "Success", "Application packaged successfully!\nOutput file: " + outputFile);
                 });
             } else {
                 Platform.runLater(() -> {
                     progressController.appendText("\nPackaging failed with exit code: " + exitCode + "\n");
-                    // 添加更多错误信息
-                    progressController.appendText("Please check the above output for more details about the error.\n");
+// 添加更多错误信息
+                    progressController.appendText("Please checkthe above output for more details about the error.\n");
                     progressController.appendText("Common issues and solutions:\n");
                     progressController.appendText("1. Make sure the jpackage tool is installed and in your PATH\n");
-                    progressController.appendText("2. Check that all file paths are correct and accessible\n");
+                   progressController.appendText("2. Check that all file paths are correct and accessible\n");
                     progressController.appendText("3. Ensure the main JAR file contains a proper manifest with Main-Class entry\n");
                     progressController.appendText("4. Verify that the input directory contains all necessary files\n");
                     progressController.setFailed();
-                    showAlert(Alert.AlertType.ERROR, "Packaging Failed", "Packaging failed with exit code: " + exitCode + 
-                              ". Please check the progress dialog for more details.");
+showAlert(Alert.AlertType.ERROR, "Packaging Failed", "Packaging failed with exit code: " + exitCode +
+                            ". Please check the progress dialog for more details.");
                 });
             }
         } catch (IOException | InterruptedException e) {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
-            
+
             Platform.runLater(() -> {
                 progressController.appendText("Error executing command: " + e.getMessage() + "\n");
                 progressController.appendText("Stack trace:\n");
@@ -419,53 +326,53 @@ public class PackagerController {
         command.add("jpackage");
 
         command.add("--input");
-        command.add("\"" + inputDirField.getText() + "\"");
+        command.add(quoteIfHasSpace(inputDirField.getText()));
 
         command.add("--name");
-        command.add("\"" + appNameField.getText() + "\"");
+        command.add(quoteIfHasSpace(appNameField.getText()));
 
         if (!appVersionField.getText().isEmpty()) {
             command.add("--app-version");
-            command.add("\"" + appVersionField.getText() + "\"");
+            command.add(quoteIfHasSpace(appVersionField.getText()));
         }
 
         command.add("--main-class");
-        command.add("\"" + mainClassField.getText() + "\"");
+        command.add(quoteIfHasSpace(mainClassField.getText()));
 
         command.add("--main-jar");
-        command.add("\"" + mainJarField.getText() + "\"");
+        command.add(quoteIfHasSpace(mainJarField.getText()));
 
         command.add("--type");
         command.add(packageTypeCombo.getValue());
 
         if (!destDirField.getText().isEmpty()) {
             command.add("--dest");
-            command.add("\"" + destDirField.getText() + "\"");
+            command.add(quoteIfHasSpace(destDirField.getText()));
         }
 
         if (!iconField.getText().isEmpty()) {
             command.add("--icon");
-            command.add("\"" + iconField.getText() + "\"");
+            command.add(quoteIfHasSpace(iconField.getText()));
         }
 
         if (!vendorField.getText().isEmpty()) {
             command.add("--vendor");
-            command.add("\"" + vendorField.getText() + "\"");
+            command.add(quoteIfHasSpace(vendorField.getText()));
         }
 
         if (!copyrightField.getText().isEmpty()) {
             command.add("--copyright");
-            command.add("\"" + copyrightField.getText() + "\"");
+            command.add(quoteIfHasSpace(copyrightField.getText()));
         }
 
         if (!descriptionField.getText().isEmpty()) {
             command.add("--description");
-            command.add("\"" + descriptionField.getText() + "\"");
+            command.add(quoteIfHasSpace(descriptionField.getText()));
         }
 
         if (!licenseField.getText().isEmpty()) {
             command.add("--license-file");
-            command.add("\"" + licenseField.getText() + "\"");
+            command.add(quoteIfHasSpace(licenseField.getText()));
         }
 
         command.add("--win-shortcut");
@@ -474,30 +381,38 @@ public class PackagerController {
 
         if (!upgradeUuidField.getText().isEmpty()) {
             command.add("--win-upgrade-uuid");
-            command.add("\"" + upgradeUuidField.getText() + "\"");
+            command.add(quoteIfHasSpace(upgradeUuidField.getText()));
         }
 
         if (!menuGroupField.getText().isEmpty()) {
             command.add("--win-menu-group");
-            command.add("\"" + menuGroupField.getText() + "\"");
-        }
+            command.add(quoteIfHasSpace(menuGroupField.getText()));
+}
 
-        if (!javaOptionsField.getText().isEmpty()) {
+if (!javaOptionsField.getText().isEmpty()) {
             String[] options = javaOptionsField.getText().split(",");
             for (String option : options) {
                 command.add("--java-options");
-                command.add("\"" + option.trim() + "\"");
+                command.add(quoteIfHasSpace(option.trim()));
             }
         }
 
         if (!addModulesField.getText().isEmpty()) {
-            command.add("--add-modules");
-            command.add("\"" + addModulesField.getText() + "\"");
+command.add("--add-modules");
+            command.add(quoteIfHasSpace(addModulesField.getText()));
         }
 
         System.out.println(command);
 
         return command;
+    }
+
+    // Helper method to add double quotes onlyif the string contains spaces
+    private String quoteIfHasSpace(String value) {
+        if (value !=null && value.contains(" ")) {
+            return "\"" + value + "\"";
+        }
+        return value;
     }
 
     private void showAlert(Alert.AlertType alertType, String title, String message) {
@@ -510,21 +425,6 @@ public class PackagerController {
         alert.showAndWait();
     }
 
-    // Inner class to hold Maven information
-    private static class MavenInfo {
-        public final String version;
-        public final String groupId;
-        public final String artifactId;
-        public final String name;
-
-        public MavenInfo(String version, String groupId, String artifactId, String name) {
-            this.version = version;
-            this.groupId = groupId;
-            this.artifactId = artifactId;
-            this.name = name;
-        }
-    }
-
     // Inner class to handle progress dialog
     private static class ProgressController {
         private Stage dialog;
@@ -532,13 +432,14 @@ public class PackagerController {
         private ProgressBar progressBar;
         private Label statusLabel;
 
-        public void showProgressDialog(Stage primaryStage) {
+public void showProgressDialog(Stage primaryStage) {
             dialog = new Stage();
             dialog.initModality(Modality.WINDOW_MODAL);
             dialog.initOwner(primaryStage);
             dialog.setTitle("Packaging Progress");
             
-            statusLabel = new Label("Packaging in progress...");
+statusLabel = new Label("Packaging in progress...");
+            
             progressBar = new ProgressBar();
             progressBar.setPrefWidth(400);
             progressBar.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
@@ -548,11 +449,23 @@ public class PackagerController {
             textArea.setPrefColumnCount(50);
             textArea.setEditable(false);
             
-            VBox vbox = new VBox(10);
+VBox vbox = new VBox(10);
             vbox.setPadding(new javafx.geometry.Insets(10));
-            vbox.getChildren().addAll(statusLabel, progressBar, textArea);
             
-            dialog.setScene(new javafx.scene.Scene(vbox));
+            // 加载CSS样式
+            try {
+                javafx.scene.Scene scene = new javafx.scene.Scene(vbox);
+                scene.getStylesheets().add(getClass().getResource("dialog.css").toExternalForm());
+dialog.setScene(scene);
+            } catch (Exception e) {
+                // 如果加载CSS失败，使用内联样式作为备选
+                vbox.setStyle("-fx-background-color: linear-gradient(to bottom, #f5f7fa, #e4edf9);");
+                statusLabel.setStyle("-fx-font-weight:bold; -fx-text-fill: #3498db;");
+                progressBar.setStyle("-fx-accent: #2ecc71;");
+                textArea.setStyle("-fx-border-color: #bdc3c7; -fx-background-color: white; -fx-background-radius: 4;");
+                dialog.setScene(new javafx.scene.Scene(vbox));
+            }
+            
             dialog.setResizable(true);
             dialog.show();
         }
@@ -564,7 +477,7 @@ public class PackagerController {
         }
         
         public void setCompleted() {
-            if (statusLabel != null) {
+            if (statusLabel != null){
                 statusLabel.setText("Packaging completed successfully!");
             }
             if (progressBar != null) {
@@ -580,8 +493,7 @@ public class PackagerController {
                 progressBar.setProgress(0);
             }
         }
-        
-        public void close() {
+public void close() {
             if (dialog != null) {
                 dialog.close();
             }
