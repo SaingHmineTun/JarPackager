@@ -15,30 +15,7 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
 ## Prerequisites
 
 - Java Development Kit (JDK) 14 or higher
-- JavaFX SDK (if not using a JDK that includes JavaFX)
 - `jpackage` tool (included in JDK 14+)
-
-## Installation
-
-1. Clone or download this repository
-2. Ensure you have JDK 14+ installed and in your PATH
-3. Build the project using Maven:
-   ```bash
-   mvn clean package
-   ```
-
-## Usage
-
-### Running the Application
-
-1. Run the application using Maven:
-   ```bash
-   mvn javafx:run
-   ```
-   Or run the packaged JAR:
-   ```bash
-   java -jar target/jar-packager.jar
-   ```
 
 ### Step-by-Step Guide
 
