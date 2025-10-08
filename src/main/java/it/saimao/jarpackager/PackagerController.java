@@ -80,7 +80,6 @@ public class PackagerController {
     @FXML
     private TextField modulePathField;
 
-    // 添加对步骤界面的引用
     @FXML
     private VBox step1;
 
@@ -92,7 +91,7 @@ public class PackagerController {
 
     @FXML
     private VBox javaOptionsContainer;
-   // Windows选项复选框
+
     @FXML
     private CheckBox winShortcutCheckBox;
 
@@ -102,10 +101,10 @@ public class PackagerController {
     @FXML
     private CheckBox winDirChooserCheckBox;
 
-    private List<TextField> javaOptionsFields = new ArrayList<>();
-    private List<HBox> javaOptionsContainers = new ArrayList<>();
+    private final List<TextField> javaOptionsFields = new ArrayList<>();
+    private final List<HBox> javaOptionsContainers = new ArrayList<>();
 
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private Stage primaryStage;
 
     public void setPrimaryStage(Stage primaryStage) {
@@ -115,7 +114,7 @@ public class PackagerController {
     @FXML
     public void initialize() {
         packageTypeCombo.getItems().addAll("exe", "msi");
-       packageTypeCombo.setValue("exe");
+        packageTypeCombo.setValue("exe");
         javaOptionsFields.add(javaOptionsField);
     }
 
@@ -131,14 +130,13 @@ public class PackagerController {
     private void showStep2() {
         //验证步骤1中的必填字段
         if (!validateStep1Fields()) {
-            showAlert("Missing Required Fields",
-                    "Please fill in all required fields (marked with *) before proceeding tothenext step.");
+            showAlert("Missing Required Fields", "Please fill in all required fields (marked with *) before proceeding tothenext step.");
             return;
         }
 
         step1.setVisible(false);
         step2.setVisible(true);
-step3.setVisible(false);
+        step3.setVisible(false);
     }
 
     @FXML
@@ -148,14 +146,8 @@ step3.setVisible(false);
         step3.setVisible(true);
     }
 
-    //验证步骤1中的必填字段
     private boolean validateStep1Fields() {
-        return !jarFileField.getText().isEmpty() &&
-                !inputDirField.getText().isEmpty() &&
-                !destDirField.getText().isEmpty() &&
-                !appNameField.getText().isEmpty() &&
-                !mainClassField.getText().isEmpty() &&
-                !mainJarField.getText().isEmpty();
+        return !jarFileField.getText().isEmpty() && !inputDirField.getText().isEmpty() && !destDirField.getText().isEmpty() && !appNameField.getText().isEmpty() && !mainClassField.getText().isEmpty() && !mainJarField.getText().isEmpty();
     }
 
     @FXML
@@ -168,14 +160,14 @@ step3.setVisible(false);
 
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 StringBuilder versionInfo = new StringBuilder();
-String line;
+                String line;
                 while ((line = reader.readLine()) != null) {
                     versionInfo.append(line).append("\n");
                 }
 
                 int exitCode = process.waitFor();
                 if (exitCode == 0) {
-                    Platform.runLater(() -> showCustomDialog("JDK Information", "Installed JDK Information",versionInfo.toString()));
+                    Platform.runLater(() -> showCustomDialog("JDK Information", "Installed JDK Information", versionInfo.toString()));
                 } else {
                     Platform.runLater(() -> showCustomDialog("Error", "Failed to get JDK information", "Error code: " + exitCode));
                 }
@@ -192,7 +184,7 @@ String line;
 
             CustomDialogController controller = loader.getController();
 
-            Stage dialogStage= new Stage();
+            Stage dialogStage = new Stage();
             controller.setDialogStage(dialogStage);
             controller.setTitle(header);
             controller.setContent(content);
@@ -216,7 +208,7 @@ String line;
         fileChooser.setTitle("Select JAR File");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JARFiles", "*.jar"));
         File selectedFile = fileChooser.showOpenDialog(jarFileField.getScene().getWindow());
-        if (selectedFile != null){
+        if (selectedFile != null) {
             jarFileField.setText(selectedFile.getAbsolutePath());
             analyzeJarFile();
         }
@@ -225,7 +217,7 @@ String line;
     private void analyzeJarFile() {
         String jarFilePath = jarFileField.getText();
         if (jarFilePath.isEmpty()) {
-            showCustomDialog("Error", "No JAR File", "Please select a JAR filefirst.");
+            showCustomDialog("Error", "No JAR File", "Please select a JAR file first.");
             return;
         }
 
@@ -236,7 +228,7 @@ String line;
         }
 
         // Run analysis in background thread
-        executorService.submit(()-> analyzeJarInBackground(jarFile));
+        executorService.submit(() -> analyzeJarInBackground(jarFile));
     }
 
     private void analyzeJarInBackground(File jarFile) {
@@ -247,7 +239,7 @@ String line;
             String mainClass = null;
 
             if (manifest != null) {
-Attributes attributes = manifest.getMainAttributes();
+                Attributes attributes = manifest.getMainAttributes();
                 mainClass = attributes.getValue("Main-Class");
             }
             final String finalMainClass = mainClass;
@@ -256,7 +248,7 @@ Attributes attributes = manifest.getMainAttributes();
             Platform.runLater(() -> {
 
                 if (finalMainClass != null && !finalMainClass.isEmpty()) {
-                   mainClassField.setText(finalMainClass);
+                    mainClassField.setText(finalMainClass);
                 }
 
                 // Set app name to jar name
@@ -266,7 +258,7 @@ Attributes attributes = manifest.getMainAttributes();
                 mainJarField.setText(jarFile.getAbsolutePath());
 
                 // Set input directory
-inputDirField.setText(jarFile.getParent());
+                inputDirField.setText(jarFile.getParent());
 
                 // Set destination directory to same as input by default
                 destDirField.setText(jarFile.getParent());
@@ -305,12 +297,7 @@ inputDirField.setText(jarFile.getParent());
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select IconFile");
         fileChooser.setInitialDirectory(new File(inputDirField.getText()));
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Icon Files", "*.ico", "*.png", "*.jpg", "*.jpeg"),
-                new FileChooser.ExtensionFilter("ICO Files", "*.ico"),
-                new FileChooser.ExtensionFilter("PNG Files", "*.png"),
-                new FileChooser.ExtensionFilter("JPG Files", "*.jpg", "*.jpeg")
-        );
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Icon Files", "*.ico", "*.png", "*.jpg", "*.jpeg"), new FileChooser.ExtensionFilter("ICO Files", "*.ico"), new FileChooser.ExtensionFilter("PNG Files", "*.png"), new FileChooser.ExtensionFilter("JPG Files", "*.jpg", "*.jpeg"));
         File selectedFile = fileChooser.showOpenDialog(iconField.getScene().getWindow());
         if (selectedFile != null) {
             String filePath = selectedFile.getAbsolutePath();
@@ -323,7 +310,7 @@ inputDirField.setText(jarFile.getParent());
                     IcoConverter.convertToIco(filePath, filePath + ".ico");
                     iconField.setText(filePath + ".ico");
                 } catch (IOException e) {
-                   showCustomDialog("Conversion Error", "Error converting to ICO", "Try other file or use ico directly");
+                    showCustomDialog("Conversion Error", "Error converting to ICO", "Try other file or use ico directly");
                 }
 
             } else {
@@ -334,7 +321,7 @@ inputDirField.setText(jarFile.getParent());
 
     private String getFileExtension(String fileName) {
         int lastDotIndex = fileName.lastIndexOf('.');
-        if (lastDotIndex> 0) {
+        if (lastDotIndex > 0) {
             return fileName.substring(lastDotIndex);
         }
         return "";
@@ -345,7 +332,7 @@ inputDirField.setText(jarFile.getParent());
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(new File(inputDirField.getText()));
         fileChooser.setTitle("Select License File");
-File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow());
+        File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow());
         if (selectedFile != null) {
             licenseField.setText(selectedFile.getAbsolutePath());
         }
@@ -363,15 +350,11 @@ File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow
     }
 
     @FXML
-   private void packageApp(ActionEvent event) {
+    private void packageApp(ActionEvent event) {
         //Validate inputs
-        if (inputDirField.getText().isEmpty() ||
-                appNameField.getText().isEmpty() ||
-                mainClassField.getText().isEmpty() ||
-                mainJarField.getText().isEmpty()) {
+        if (inputDirField.getText().isEmpty() || appNameField.getText().isEmpty() || mainClassField.getText().isEmpty() || mainJarField.getText().isEmpty()) {
 
-            showCustomDialog("Missing Required Fields", "Missing Required Fields",
-                   "Please fill in all required fields (InputDirectory, Application Name, Main Class, MainJAR)");
+            showCustomDialog("Missing Required Fields", "Missing Required Fields", "Please fill in all required fields (InputDirectory, Application Name, Main Class, MainJAR)");
             return;
         }
 
@@ -398,7 +381,7 @@ File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow
             }
             Platform.runLater(() -> {
                 progressController.appendText("Command: ");
-                progressController.appendText(commandStr.toString().trim()+ "\n\n");
+                progressController.appendText(commandStr.toString().trim() + "\n\n");
             });
 
             ProcessBuilder processBuilder = new ProcessBuilder(command);
@@ -415,7 +398,7 @@ File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow
             int exitCode = process.waitFor();
             if (exitCode == 0) {
                 String destDir = destDirField.getText().isEmpty() ? inputDirField.getText() : destDirField.getText();
-               String packageType = packageTypeCombo.getValue();
+                String packageType = packageTypeCombo.getValue();
                 String appName = appNameField.getText();
                 String outputFile = destDir + File.separator + appName + "." + packageType;
 
@@ -436,12 +419,11 @@ File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow
                     progressController.appendText("3. Ensure the main JAR file contains a proper manifest withMain-Classentry\n");
                     progressController.appendText("4. Verifythat the input directory contains all necessaryfiles\n");
                     progressController.setFailed();
-                    showCustomDialog("Packaging Failed", "Packaging Failed", "Packaging failed with exit code: " + exitCode +
-                            ". Please check the progress dialog formore details.");
+                    showCustomDialog("Packaging Failed", "Packaging Failed", "Packaging failed with exit code: " + exitCode + ". Please check the progress dialog formore details.");
                 });
             }
         } catch (IOException | InterruptedException e) {
-            StringWriter sw =new StringWriter();
+            StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
 
@@ -480,7 +462,7 @@ File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow
         command.add(packageTypeCombo.getValue());
 
         if (!destDirField.getText().isEmpty()) {
-           command.add("--dest");
+            command.add("--dest");
             command.add(quoteIfHasSpace(destDirField.getText()));
         }
 
@@ -488,7 +470,7 @@ File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow
             String iconPath = iconField.getText();
 
             // 检查是否需要转换图标格式
-            if (iconPath.contains("(will be converted to ICO)")){
+            if (iconPath.contains("(will be converted to ICO)")) {
                 // 移除标记文本，获取原始路径
                 iconPath = iconPath.replace(" (will be converted to ICO)", "");
             }
@@ -500,8 +482,7 @@ File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow
                 //这里应该实现PNG/JPG到ICO的转换逻辑
                 // 为简化示例，我们在这里只是给出提示
                 // 在实际应用中，你可能需要使用图像处理库来完成转换
-                showCustomDialog("Icon Conversion", "Icon Conversion Needed",
-                        "The selected icon isnot in ICOformat. You need to convert it to ICO format manually or implement automatic conversion.");
+                showCustomDialog("Icon Conversion", "Icon Conversion Needed", "The selected icon isnot in ICOformat. You need to convert it to ICO format manually or implement automatic conversion.");
             }
 
             command.add("--icon");
@@ -531,7 +512,6 @@ File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow
             command.add(quoteIfHasSpace(menuGroupField.getText()));
         }
 
-        //处理所有Java选项字段
         for (TextField field : javaOptionsFields) {
             if (!field.getText().isEmpty()) {
                 command.add("--java-options");
@@ -542,7 +522,7 @@ File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow
         if (!addModulesField.getText().isEmpty()) {
             command.add("--add-modules");
             command.add(quoteIfHasSpace(addModulesField.getText()));
-       }
+        }
 
         if (!modulePathField.getText().isEmpty()) {
             command.add("--module-path");
@@ -562,44 +542,12 @@ File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow
         return value;
     }
 
-    // Helper methodto always add double quotes
+    // Helper method to always add double quotes
     private String quoteAlways(String value) {
         if (value != null) {
-            return "\""+ value + "\"";
+            return "\"" + value + "\"";
         }
         return value;
-    }
-
-    //将PNG/JPG图像转换为ICO格式
-    private String convertToIco(String imagePath) {
-        try {
-            // 获取临时目录
-            String tempDir = System.getProperty("java.io.tmpdir");
-            String fileName = new File(imagePath).getName();
-            String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
-            String icoPath = tempDir + File.separator + baseName + ".ico";
-
-            // 检查是否已存在转换后的ICO文件
-            File icoFile = new File(icoPath);
-            if (icoFile.exists()) {
-                return icoPath;
-            }
-
-            // 使用IcoConverter进行转换
-            IcoConverter.convertToIco(imagePath, icoPath);
-
-            showCustomDialog("Success", "Icon Conversion",
-                    "Image successfully converted to ICO format.\n\n" +
-                            "Converted ICOsaved to: " + icoPath);
-
-            return icoPath;
-        } catch (Exception e) {
-            e.printStackTrace();
-            showCustomDialog("Conversion Error", "Icon Conversion Failed",
-                    "Error converting image to ICO format: " + e.getMessage() +
-                            "\n\nUsing original image file instead.");
-return imagePath; // 出错时返回原始路径
-        }
     }
 
     @FXML
@@ -607,13 +555,13 @@ return imagePath; // 出错时返回原始路径
         // Create a new HBox container for the TextField and Button
         HBox container = new HBox(5);
         container.getStyleClass().add("hbox");
-// Create a new TextField
+        // Create a new TextField
         TextField newJavaOptionField = new TextField();
         newJavaOptionField.setPrefHeight(javaOptionsField.getPrefHeight());
         newJavaOptionField.getStyleClass().add("text-field");
         HBox.setHgrow(newJavaOptionField, javafx.scene.layout.Priority.ALWAYS);
 
-// Createa remove button
+        // Create a remove button
         Button removeButton = new Button("Remove");
         removeButton.getStyleClass().add("button");
         removeButton.setOnAction(e -> {
@@ -622,7 +570,7 @@ return imagePath; // 出错时返回原始路径
             javaOptionsContainer.getChildren().remove(container);
         });
 
-        //Add components to thecontainer
+        //Add components to the container
         container.getChildren().addAll(newJavaOptionField, removeButton);
 
         // Add the new field to our lists
@@ -633,7 +581,7 @@ return imagePath; // 出错时返回原始路径
         javaOptionsContainer.getChildren().add(container);
     }
 
-   private void showAlert(String title, String message) {
+    private void showAlert(String title, String message) {
         showCustomDialog(title, title, message);
     }
 }
