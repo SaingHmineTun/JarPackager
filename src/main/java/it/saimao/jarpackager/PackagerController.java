@@ -3,10 +3,12 @@ package it.saimao.jarpackager;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -26,13 +28,11 @@ public class PackagerController {
     @FXML
     private TextField jarFileField;
 
-
     @FXML
     private TextField inputDirField;
 
     @FXML
-    private
-    TextField destDirField;
+    private TextField destDirField;
 
     @FXML
     private TextField appNameField;
@@ -76,9 +76,27 @@ public class PackagerController {
     @FXML
     private TextField addModulesField;
 
-    // 添加对TabPane的引用
     @FXML
-    private TabPane mainTabPane;
+    private TextField modulePathField;
+
+    // 添加对步骤界面的引用
+    @FXML
+    private VBox step1;
+
+    @FXML
+    private VBox step2;
+
+    @FXML
+    private VBox step3;
+    // Windows选项复选框
+    @FXML
+    private CheckBox winShortcutCheckBox;
+
+    @FXML
+    private CheckBox winMenuCheckBox;
+
+    @FXML
+    private CheckBox winDirChooserCheckBox;
 
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
     private Stage primaryStage;
@@ -93,11 +111,102 @@ public class PackagerController {
         packageTypeCombo.setValue("exe");
     }
 
+    // 步骤导航方法
+    @FXML
+    private void showStep1() {
+        step1.setVisible(true);
+        step2.setVisible(false);
+        step3.setVisible(false);
+    }
+
+    @FXML
+    private void showStep2() {
+        //验证步骤1中的必填字段
+        if (!validateStep1Fields()) {
+            showAlert(Alert.AlertType.WARNING, "Missing Required Fields",
+                    "Please fill in all required fields (marked with *) before proceeding tothenext step.");
+            return;
+        }
+
+        step1.setVisible(false);
+        step2.setVisible(true);
+        step3.setVisible(false);
+    }
+
+    @FXML
+    private void showStep3() {
+        step1.setVisible(false);
+        step2.setVisible(false);
+        step3.setVisible(true);
+    }
+
+    //验证步骤1中的必填字段
+    private boolean validateStep1Fields() {
+        return !jarFileField.getText().isEmpty() &&
+                !inputDirField.getText().isEmpty() &&
+                !destDirField.getText().isEmpty() &&
+                !appNameField.getText().isEmpty() &&
+                !mainClassField.getText().isEmpty() &&
+                !mainJarField.getText().isEmpty();
+    }
+
+    @FXML
+    private void checkJdkInfo(ActionEvent event) {
+        executorService.submit(() -> {
+            try {
+                ProcessBuilder processBuilder = new ProcessBuilder("java", "-version");
+                processBuilder.redirectErrorStream(true);
+                Process process = processBuilder.start();
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                StringBuilder versionInfo = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    versionInfo.append(line).append("\n");
+                }
+
+                int exitCode = process.waitFor();
+                if (exitCode == 0) {
+                    Platform.runLater(() -> showCustomDialog("JDK Information", "Installed JDK Information", versionInfo.toString()));
+                } else {
+                    Platform.runLater(() -> showCustomDialog("Error", "Failed to get JDK information", "Error code: " + exitCode));
+                }
+            } catch (Exception e) {
+                Platform.runLater(() -> showCustomDialog("Error", "Failed to execute java -version", e.getMessage()));
+            }
+        });
+    }
+
+    private void showCustomDialog(String title, String header, String content) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("custom-dialog.fxml"));
+            VBox dialogRoot = loader.load();
+
+            CustomDialogController controller = loader.getController();
+
+            Stage dialogStage = new Stage();
+            controller.setDialogStage(dialogStage);
+            controller.setTitle(header);
+            controller.setContent(content);
+
+            dialogStage.setTitle(title);
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(primaryStage);
+            javafx.scene.Scene scene = new javafx.scene.Scene(dialogRoot);
+            scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
+            dialogStage.setScene(scene);
+            dialogStage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.INFORMATION, title, content);
+        }
+    }
+
     @FXML
     private void browseJarFile(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select JAR File");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JAR Files", "*.jar"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JARFiles", "*.jar"));
         File selectedFile = fileChooser.showOpenDialog(jarFileField.getScene().getWindow());
         if (selectedFile != null) {
             jarFileField.setText(selectedFile.getAbsolutePath());
@@ -108,13 +217,13 @@ public class PackagerController {
     private void analyzeJarFile() {
         String jarFilePath = jarFileField.getText();
         if (jarFilePath.isEmpty()) {
-            showAlert(Alert.AlertType.ERROR, "No JAR File", "Please select a JAR file first.");
+            showCustomDialog("Error", "No JAR File", "Please select a JAR file first.");
             return;
         }
 
         File jarFile = new File(jarFilePath);
         if (!jarFile.exists()) {
-            showAlert(Alert.AlertType.ERROR, "File Not Found", "The selected JAR file does not exist.");
+            showCustomDialog("Error", "FileNotFound", "The selected JAR file does not exist.");
             return;
         }
 
@@ -135,14 +244,14 @@ public class PackagerController {
             }
             final String finalMainClass = mainClass;
 
-            // Update UI on JavaFX Application Thread
+            //Update UIonJavaFX Application Thread
             Platform.runLater(() -> {
 
                 if (finalMainClass != null && !finalMainClass.isEmpty()) {
                     mainClassField.setText(finalMainClass);
                 }
 
-                // Set main jar file name
+// Set main jar file name
                 mainJarField.setText(jarFile.getAbsolutePath());
 
                 // Set input directory
@@ -155,8 +264,7 @@ public class PackagerController {
             jar.close();
         } catch (Exception e) {
             Platform.runLater(() -> {
-                showAlert(Alert.AlertType.ERROR, "AnalysisError",
-                        "Error analyzing JAR file: " + e.getMessage());
+                showCustomDialog("Analysis Error", "Error analyzing JAR file", e.getMessage());
             });
         }
     }
@@ -185,7 +293,7 @@ public class PackagerController {
     private void browseMainJar(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Main JAR File");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JAR Files", "*.jar"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JARFiles", "*.jar"));
         File selectedFile = fileChooser.showOpenDialog(mainJarField.getScene().getWindow());
         if (selectedFile != null) {
             mainJarField.setText(selectedFile.getName());
@@ -196,7 +304,7 @@ public class PackagerController {
     private void browseIcon(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Icon File");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Icon Files", "*.ico"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("IconFiles", "*.ico"));
         File selectedFile = fileChooser.showOpenDialog(iconField.getScene().getWindow());
         if (selectedFile != null) {
             iconField.setText(selectedFile.getAbsolutePath());
@@ -214,14 +322,24 @@ public class PackagerController {
     }
 
     @FXML
+    private void browseModulePath(ActionEvent event) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("SelectModulePath Directory");
+        File selectedDirectory = directoryChooser.showDialog(modulePathField.getScene().getWindow());
+        if (selectedDirectory != null) {
+            modulePathField.setText(selectedDirectory.getAbsolutePath());
+        }
+    }
+
+    @FXML
     private void packageApp(ActionEvent event) {
-//Validate inputs
+        //Validate inputs
         if (inputDirField.getText().isEmpty() ||
                 appNameField.getText().isEmpty() ||
                 mainClassField.getText().isEmpty() ||
                 mainJarField.getText().isEmpty()) {
 
-            showAlert(Alert.AlertType.ERROR, "Missing Required Fields",
+            showCustomDialog("Missing Required Fields", "Missing Required Fields",
                     "Please fill in all required fields (InputDirectory, Application Name, Main Class, Main JAR)");
             return;
         }
@@ -238,7 +356,7 @@ public class PackagerController {
             progressController.appendText("Executing packaging command...\n\n");
         });
 
-        // Build jpackage command
+        // Buildjpackage command
         List<String> command = buildJPackageCommand();
 
         try {
@@ -274,20 +392,20 @@ public class PackagerController {
                     progressController.appendText("\nPackaging completed successfully!\n");
                     progressController.appendText("Output file saved to: " + outputFile + "\n");
                     progressController.setCompleted();
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Application packaged successfully!\nOutput file: " + outputFile);
+                    showCustomDialog("Success", "Packaging Completed", "Application packaged successfully!\nOutput file: " + outputFile);
                 });
             } else {
                 Platform.runLater(() -> {
                     progressController.appendText("\nPackaging failed with exit code: " + exitCode + "\n");
-// 添加更多错误信息
-                    progressController.appendText("Please checkthe above output for more details about the error.\n");
+                    // 添加更多错误信息
+                    progressController.appendText("Please check the above output for more details about the error.\n");
                     progressController.appendText("Common issues and solutions:\n");
-                    progressController.appendText("1. Make sure the jpackage tool is installed and in your PATH\n");
+                    progressController.appendText("1. Make sure the jpackage tool is installedand in your PATH\n");
                     progressController.appendText("2. Check that all file paths are correct and accessible\n");
-                    progressController.appendText("3. Ensure the main JAR file contains a proper manifest with Main-Class entry\n");
-                    progressController.appendText("4. Verify that the input directory contains all necessary files\n");
+                    progressController.appendText("3. Ensure the main JAR file contains a proper manifest with Main-Classentry\n");
+                    progressController.appendText("4. Verify that the input directory contains all necessaryfiles\n");
                     progressController.setFailed();
-                    showAlert(Alert.AlertType.ERROR, "Packaging Failed", "Packaging failed with exit code: " + exitCode +
+                    showCustomDialog("Packaging Failed", "Packaging Failed", "Packaging failed with exit code: " + exitCode +
                             ". Please check the progress dialog for more details.");
                 });
             }
@@ -301,7 +419,7 @@ public class PackagerController {
                 progressController.appendText("Stack trace:\n");
                 progressController.appendText(sw.toString());
                 progressController.setFailed();
-                showAlert(Alert.AlertType.ERROR, "Execution Error", "Error executing command: " + e.getMessage());
+                showCustomDialog("Execution Error", "Execution Error", "Error executing command: " + e.getMessage());
             });
         }
     }
@@ -360,9 +478,18 @@ public class PackagerController {
             command.add(quoteIfHasSpace(licenseField.getText()));
         }
 
-        command.add("--win-shortcut");
-        command.add("--win-menu");
-        command.add("--win-dir-chooser");
+        // 添加Windows选项（根据复选框状态）
+        if (winShortcutCheckBox.isSelected()) {
+            command.add("--win-shortcut");
+        }
+
+        if (winMenuCheckBox.isSelected()) {
+            command.add("--win-menu");
+        }
+
+        if (winDirChooserCheckBox.isSelected()) {
+            command.add("--win-dir-chooser");
+        }
 
         if (!upgradeUuidField.getText().isEmpty()) {
             command.add("--win-upgrade-uuid");
@@ -377,8 +504,10 @@ public class PackagerController {
         if (!javaOptionsField.getText().isEmpty()) {
             String[] options = javaOptionsField.getText().split(",");
             for (String option : options) {
-                command.add("--java-options");
-                command.add(quoteIfHasSpace(option.trim()));
+                if (!option.trim().isEmpty()) {
+                    command.add("--java-options");
+                    command.add(quoteIfHasSpace(option.trim()));
+                }
             }
         }
 
@@ -387,12 +516,17 @@ public class PackagerController {
             command.add(quoteIfHasSpace(addModulesField.getText()));
         }
 
+        if (!modulePathField.getText().isEmpty()) {
+            command.add("--module-path");
+            command.add(quoteIfHasSpace(modulePathField.getText()));
+        }
+
         System.out.println(command);
 
         return command;
     }
 
-    // Helper method to add double quotes onlyif the string contains spaces
+    // Helper method to add doublequotes onlyif the string contains spaces
     private String quoteIfHasSpace(String value) {
         if (value != null && value.contains(" ")) {
             return "\"" + value + "\"";
@@ -401,12 +535,6 @@ public class PackagerController {
     }
 
     private void showAlert(Alert.AlertType alertType, String title, String message) {
-        Alert alert = new Alert(alertType);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.initModality(Modality.WINDOW_MODAL);
-        alert.initOwner(primaryStage);
-        alert.showAndWait();
+        showCustomDialog(title, title, message);
     }
 }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox prefWidth="400.0" fx:controller="it.saimao.jarpackager.CustomDialogController" spacing="15.0" styleClass="vbox" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    
+    <Label fx:id="titleLabel" styleClass="title-label" text="Dialog Title">
+        <font>
+            <Font size="16.0" />
+        </font>
+    </Label>
+    
+    <TextArea fx:id="contentTextArea" editable="false" prefRowCount="8" wrapText="true" />
+    
+    <HBox alignment="CENTER_RIGHT">
+        <Button fx:id="okButton" onAction="#onOkClicked" style="-fx-font-weight: bold;" text="OK" />
+    </HBox>
+</VBox>

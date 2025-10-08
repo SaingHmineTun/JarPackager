@@ -9,13 +9,14 @@ import java.io.IOException;
 
 public class Main extends Application {
 
-    static void main() {
-        launch();
+    public static void main(String[] args) {
+        launch(args);
     }
+    
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("packager-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 800, 700);
+        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("stepped-packager-view.fxml"));
+        Scene scene = new Scene(fxmlLoader.load());
         stage.setTitle("JAR Packager Tool");
         stage.setScene(scene);
         stage.show();
