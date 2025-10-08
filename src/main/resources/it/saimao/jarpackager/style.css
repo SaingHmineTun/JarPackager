@@ -1,7 +1,19 @@
-/* 改进的暗色主题样式，确保文本清晰易读 */
+@font-face {
+    font-family: 'Inika';
+    font-weight: normal;
+    src: url('inika_regular.ttf');
+}
+
+@font-face {
+    font-family: 'Inika';
+    font-weight: bold;
+    src: url('inika_bold.ttf');
+}
+
 .root {
     -fx-background-color: #1e1e1e;
-    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-family: "Inika";
+    -fx-font-size: 13px;
 }
 
 /* 标题样式 */
@@ -92,7 +104,6 @@
 /* 标签样式 */
 .label {
     -fx-text-fill: #e0e0e0;
-    -fx-font-size: 12px;
 }
 
 .label.required {

@@ -11,9 +11,6 @@
     </padding>
     
     <Label fx:id="titleLabel" styleClass="title-label" text="Dialog Title">
-        <font>
-            <Font size="16.0" />
-        </font>
     </Label>
     
     <TextArea fx:id="contentTextArea" editable="false" prefRowCount="8" wrapText="true" />

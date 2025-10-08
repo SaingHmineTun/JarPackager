@@ -235,7 +235,7 @@ public class PackagerController {
         try {
             JarFile jar = new JarFile(jarFile);
             Manifest manifest = jar.getManifest();
-// Extract information from manifest
+// Extract information frommanifest
             String mainClass = null;
 
             if (manifest != null) {
@@ -244,7 +244,7 @@ public class PackagerController {
             }
             final String finalMainClass = mainClass;
 
-            //Update UIonJavaFX Application Thread
+            //Update UIonJavaFXApplication Thread
             Platform.runLater(() -> {
 
                 if (finalMainClass != null && !finalMainClass.isEmpty()) {
@@ -257,7 +257,7 @@ public class PackagerController {
                 // Set input directory
                 inputDirField.setText(jarFile.getParent());
 
-                // Set destination directory to same as input by default
+                // Set destination directoryto same as input by default
                 destDirField.setText(jarFile.getParent());
             });
 
@@ -304,11 +304,40 @@ public class PackagerController {
     private void browseIcon(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Icon File");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("IconFiles", "*.ico"));
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Icon Files", "*.ico", "*.png", "*.jpg", "*.jpeg"),
+                new FileChooser.ExtensionFilter("ICO Files", "*.ico"),
+                new FileChooser.ExtensionFilter("PNG Files", "*.png"),
+                new FileChooser.ExtensionFilter("JPG Files", "*.jpg", "*.jpeg")
+        );
         File selectedFile = fileChooser.showOpenDialog(iconField.getScene().getWindow());
         if (selectedFile != null) {
-            iconField.setText(selectedFile.getAbsolutePath());
+            String filePath = selectedFile.getAbsolutePath();
+            String extension = getFileExtension(filePath).toLowerCase();
+
+            // 如果不是ico文件，需要转换
+            if (!extension.equals(".ico")) {
+                iconField.setText(filePath + " (will be converted to ICO)");
+                try {
+                    IcoConverter.convertToIco(filePath, filePath + ".ico");
+                    iconField.setText(filePath + ".ico");
+                } catch (IOException e) {
+                    showCustomDialog("Conversion Error", "Error converting to ICO", "Try other file or use ico directly");
+                }
+
+            } else {
+                iconField.setText(filePath);
+            }
         }
+    }
+
+    // 辅助方法：获取文件扩展名
+    private String getFileExtension(String fileName) {
+        int lastDotIndex = fileName.lastIndexOf('.');
+        if (lastDotIndex > 0) {
+            return fileName.substring(lastDotIndex);
+        }
+        return "";
     }
 
     @FXML
@@ -340,7 +369,7 @@ public class PackagerController {
                 mainJarField.getText().isEmpty()) {
 
             showCustomDialog("Missing Required Fields", "Missing Required Fields",
-                    "Please fill in all required fields (InputDirectory, Application Name, Main Class, Main JAR)");
+                    "Please fill in all required fields (InputDirectory, Application Name, Main Class, MainJAR)");
             return;
         }
 
@@ -360,7 +389,7 @@ public class PackagerController {
         List<String> command = buildJPackageCommand();
 
         try {
-            // 在进度对话框中显示执行的命令
+            //在进度对话框中显示执行的命令
             StringBuilder commandStr = new StringBuilder();
             for (String part : command) {
                 commandStr.append(part).append(" ");
@@ -401,7 +430,7 @@ public class PackagerController {
                     progressController.appendText("Please check the above output for more details about the error.\n");
                     progressController.appendText("Common issues and solutions:\n");
                     progressController.appendText("1. Make sure the jpackage tool is installedand in your PATH\n");
-                    progressController.appendText("2. Check that all file paths are correct and accessible\n");
+                    progressController.appendText("2. Check that all filepaths arecorrect and accessible\n");
                     progressController.appendText("3. Ensure the main JAR file contains a proper manifest with Main-Classentry\n");
                     progressController.appendText("4. Verify that the input directory contains all necessaryfiles\n");
                     progressController.setFailed();
@@ -419,7 +448,7 @@ public class PackagerController {
                 progressController.appendText("Stack trace:\n");
                 progressController.appendText(sw.toString());
                 progressController.setFailed();
-                showCustomDialog("Execution Error", "Execution Error", "Error executing command: " + e.getMessage());
+                showCustomDialog("Execution Error", "Execution Error", "Error executing command:" + e.getMessage());
             });
         }
     }
@@ -454,28 +483,27 @@ public class PackagerController {
         }
 
         if (!iconField.getText().isEmpty()) {
+            String iconPath = iconField.getText();
+
+            // 检查是否需要转换图标格式
+            if (iconPath.contains(" (will be converted to ICO)")) {
+                // 移除标记文本，获取原始路径
+                iconPath = iconPath.replace(" (will be converted to ICO)", "");
+            }
+
+            String extension = getFileExtension(iconPath).toLowerCase();
+
+            // 如果不是ico文件，需要进行转换
+            if (!extension.equals(".ico")) {
+                //这里应该实现PNG/JPG到ICO的转换逻辑
+                // 为简化示例，我们在这里只是给出提示
+                // 在实际应用中，你可能需要使用图像处理库来完成转换
+                showCustomDialog("Icon Conversion", "Icon Conversion Needed",
+                        "The selected icon isnot in ICO format. You need to convert it to ICO format manually or implement automatic conversion.");
+            }
+
             command.add("--icon");
-            command.add(quoteIfHasSpace(iconField.getText()));
-        }
-
-        if (!vendorField.getText().isEmpty()) {
-            command.add("--vendor");
-            command.add(quoteIfHasSpace(vendorField.getText()));
-        }
-
-        if (!copyrightField.getText().isEmpty()) {
-            command.add("--copyright");
-            command.add(quoteIfHasSpace(copyrightField.getText()));
-        }
-
-        if (!descriptionField.getText().isEmpty()) {
-            command.add("--description");
-            command.add(quoteIfHasSpace(descriptionField.getText()));
-        }
-
-        if (!licenseField.getText().isEmpty()) {
-            command.add("--license-file");
-            command.add(quoteIfHasSpace(licenseField.getText()));
+            command.add(quoteIfHasSpace(iconPath));
         }
 
         // 添加Windows选项（根据复选框状态）
@@ -532,6 +560,38 @@ public class PackagerController {
             return "\"" + value + "\"";
         }
         return value;
+    }
+
+    //将PNG/JPG图像转换为ICO格式
+    private String convertToIco(String imagePath) {
+        try {
+            // 获取临时目录
+            String tempDir = System.getProperty("java.io.tmpdir");
+            String fileName = new File(imagePath).getName();
+            String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+            String icoPath = tempDir + File.separator + baseName + ".ico";
+
+            // 检查是否已存在转换后的ICO文件
+            File icoFile = new File(icoPath);
+            if (icoFile.exists()) {
+                return icoPath;
+            }
+
+            // 使用IcoConverter进行转换
+            IcoConverter.convertToIco(imagePath, icoPath);
+
+            showCustomDialog("Success", "Icon Conversion",
+                    "Image successfully converted to ICO format.\n\n" +
+                            "Converted ICO saved to: " + icoPath);
+
+            return icoPath;
+        } catch (Exception e) {
+            e.printStackTrace();
+            showCustomDialog("Conversion Error", "Icon Conversion Failed",
+                    "Error converting image to ICO format: " + e.getMessage() +
+                            "\n\nUsing original image file instead.");
+            return imagePath; // 出错时返回原始路径
+        }
     }
 
     private void showAlert(Alert.AlertType alertType, String title, String message) {

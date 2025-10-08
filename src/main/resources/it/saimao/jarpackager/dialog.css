@@ -1,7 +1,18 @@
-/* 改进的暗色主题进度对话框样式，确保文本清晰易读 */
+@font-face {
+    font-family: 'Inika';
+    font-weight: normal;
+    src: url('inika_regular.ttf');
+}
+
+@font-face {
+    font-family: 'Inika';
+    font-weight: bold;
+    src: url('inika_bold.ttf');
+}
+
 .root {
     -fx-background-color: #1e1e1e;
-    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-family: "Inika";
 }
 
 .label {
@@ -30,8 +41,8 @@
     -fx-border-color: #5a9cb9;
     -fx-background-color: #3c3c3c;
     -fx-background-radius: 4;
-    -fx-font-family: "Monospaced";
-    -fx-font-size: 12px;
+    -fx-font-family: "Inika";
+    -fx-font-size: 14px;
     -fx-text-fill: #ffffff;
 }
 
