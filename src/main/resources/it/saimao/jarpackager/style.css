@@ -11,7 +11,7 @@
 }
 
 .root {
-    -fx-background-color: #1e1e1e;
+    -fx-background-color:#1e1e1e;
     -fx-font-family: "Inika";
     -fx-font-size: 13px;
 }
@@ -34,7 +34,7 @@
 }
 
 .tab {
-    -fx-background-color: #2d2d2d;
+    -fx-background-color:#2d2d2d;
     -fx-padding: 8 15 8 15;
     -fx-background-radius: 5 5 0 0;
 }
@@ -88,7 +88,7 @@
 
 /* 文本框样式 */
 .text-field {
-    -fx-border-color: #5a9cb9;
+   -fx-border-color: #5a9cb9;
     -fx-border-width: 1;
     -fx-background-color: #3c3c3c;
     -fx-padding: 5;
@@ -114,8 +114,12 @@
 /* 下拉框样式 */
 .combo-box {
     -fx-border-color: #5a9cb9;
-    -fx-background-color: #3c3c3c;
+-fx-background-color: #3c3c3c;
     -fx-background-radius: 4;
+}
+
+.combo-box .cell {
+    -fx-text-fill: #ffffff;
 }
 
 .combo-box .arrow-button {
@@ -144,7 +148,7 @@
     -fx-text-fill: #ffffff;
 }
 
-.combo-box .list-view .list-cell:hover {
+.combo-box .list-view .list-cell:hover{
     -fx-background-color: #3a7ca5;
 }
 
@@ -183,13 +187,45 @@
     -fx-effect: dropshadow(gaussian, rgba(122, 182, 214, 0.5), 5, 0, 0, 0);
 }
 
-/* 网格面板样式 */
-.grid-pane {
-    -fx-background-color: #2d2d2d;
-    -fx-padding: 10;
-}
-
 /* VBox 样式 */
 .vbox {
     -fx-spacing: 15;
+}
+
+/*复选框样式 */
+.check-box {
+    -fx-text-fill: #e0e0e0;
+    -fx-padding: 5px;
+}
+
+.check-box .box {
+    -fx-background-color: #3c3c3c;
+    -fx-border-color: #5a9cb9;
+   -fx-border-width: 2px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 3, 0, 1, 1);
+}
+
+.check-box:hover .box {
+    -fx-background-color: #444444;
+    -fx-border-color: #7ab6d6;
+}
+
+.check-box:selected .box {
+    -fx-background-color: linear-gradient(to bottom, #3a7ca5, #2a5c7a);
+    -fx-border-color: #2a5c7a;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: white;
+    -fx-shape: "M 0 4 L 3 8 L 9 0 L 10 1 L 3 9L -1 5 Z";
+}
+
+.check-box:pressed .box {
+    -fx-background-color: linear-gradient(to bottom, #2a5c7a, #1a4c6a);
+}
+
+.check-box:disabled {
+    -fx-opacity: 0.5;
 }

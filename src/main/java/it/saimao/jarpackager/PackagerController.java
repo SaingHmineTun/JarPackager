@@ -235,7 +235,7 @@ public class PackagerController {
         try {
             JarFile jar = new JarFile(jarFile);
             Manifest manifest = jar.getManifest();
-// Extract information frommanifest
+// Extract information from manifest
             String mainClass = null;
 
             if (manifest != null) {
@@ -251,13 +251,16 @@ public class PackagerController {
                     mainClassField.setText(finalMainClass);
                 }
 
-// Set main jar file name
+                // Set app name to jar name
+                appNameField.setText(jarFile.getName().substring(0, jarFile.getName().lastIndexOf(".jar")));
+
+                // Set main jar file name
                 mainJarField.setText(jarFile.getAbsolutePath());
 
                 // Set input directory
                 inputDirField.setText(jarFile.getParent());
 
-                // Set destination directoryto same as input by default
+                // Set destination directory to same as input by default
                 destDirField.setText(jarFile.getParent());
             });
 
@@ -290,20 +293,10 @@ public class PackagerController {
     }
 
     @FXML
-    private void browseMainJar(ActionEvent event) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select Main JAR File");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JARFiles", "*.jar"));
-        File selectedFile = fileChooser.showOpenDialog(mainJarField.getScene().getWindow());
-        if (selectedFile != null) {
-            mainJarField.setText(selectedFile.getName());
-        }
-    }
-
-    @FXML
     private void browseIcon(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Icon File");
+        fileChooser.setInitialDirectory(new File(inputDirField.getText()));
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Icon Files", "*.ico", "*.png", "*.jpg", "*.jpeg"),
                 new FileChooser.ExtensionFilter("ICO Files", "*.ico"),
@@ -343,6 +336,7 @@ public class PackagerController {
     @FXML
     private void browseLicense(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(new File(inputDirField.getText()));
         fileChooser.setTitle("Select License File");
         File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow());
         if (selectedFile != null) {
@@ -354,6 +348,7 @@ public class PackagerController {
     private void browseModulePath(ActionEvent event) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("SelectModulePath Directory");
+        directoryChooser.setInitialDirectory(new File(inputDirField.getText()));
         File selectedDirectory = directoryChooser.showDialog(modulePathField.getScene().getWindow());
         if (selectedDirectory != null) {
             modulePathField.setText(selectedDirectory.getAbsolutePath());

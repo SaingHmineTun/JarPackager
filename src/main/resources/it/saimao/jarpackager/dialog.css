@@ -11,8 +11,47 @@
 }
 
 .root {
-    -fx-background-color: #1e1e1e;
+    -fx-background-color:#1e1e1e;
     -fx-font-family: "Inika";
+}
+
+/*复选框样式 */
+.check-box {
+    -fx-text-fill: #ffffff;
+    -fx-padding: 5px;
+    -fx-font-size: 14px;
+}
+
+.check-box .box {
+    -fx-background-color: #3c3c3c;
+    -fx-border-color: #5a9cb9;
+    -fx-border-width: 2px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 3, 0, 1, 1);
+}
+
+.check-box:hover .box {
+    -fx-background-color: #444444;
+    -fx-border-color: #7ab6d6;
+}
+
+.check-box:selected .box {
+    -fx-background-color: linear-gradient(to bottom, #3a7ca5, #2a5c7a);
+    -fx-border-color: #2a5c7a;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: white;
+    -fx-shape: "M 0 4 L 3 8 L 9 0 L 101 L 3 9 L -1 5 Z";
+}
+
+.check-box:pressed .box {
+    -fx-background-color: linear-gradient(to bottom, #2a5c7a, #1a4c6a);
+}
+
+.check-box:disabled {
+    -fx-opacity: 0.5;
 }
 
 .label {
@@ -32,7 +71,7 @@
 }
 
 .progress-bar .track {
-    -fx-background-color: #3c3c3c;
+    -fx-background-color:#3c3c3c;
     -fx-background-insets: 0;
     -fx-background-radius: 3;
 }
