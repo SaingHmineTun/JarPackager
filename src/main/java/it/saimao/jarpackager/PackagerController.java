@@ -3,8 +3,10 @@ package it.saimao.jarpackager;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -24,8 +26,6 @@ public class PackagerController {
     @FXML
     private TextField jarFileField;
 
-    @FXML
-    private ProgressBar analysisProgress;
 
     @FXML
     private TextField inputDirField;
@@ -44,7 +44,7 @@ public class PackagerController {
     private TextField mainClassField;
 
     @FXML
-  private TextField mainJarField;
+    private TextField mainJarField;
 
     @FXML
     private ComboBox<String> packageTypeCombo;
@@ -101,11 +101,11 @@ public class PackagerController {
         File selectedFile = fileChooser.showOpenDialog(jarFileField.getScene().getWindow());
         if (selectedFile != null) {
             jarFileField.setText(selectedFile.getAbsolutePath());
+            analyzeJarFile();
         }
     }
 
-    @FXML
-    private void analyzeJarFile(ActionEvent event) {
+    private void analyzeJarFile() {
         String jarFilePath = jarFileField.getText();
         if (jarFilePath.isEmpty()) {
             showAlert(Alert.AlertType.ERROR, "No JAR File", "Please select a JAR file first.");
@@ -118,13 +118,8 @@ public class PackagerController {
             return;
         }
 
-        // Show progress indicator
-        analysisProgress.setVisible(true);
-        analysisProgress.setManaged(true);
-        analysisProgress.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
-
         // Run analysis in background thread
-        executorService.submit(() ->analyzeJarInBackground(jarFile));
+        executorService.submit(() -> analyzeJarInBackground(jarFile));
     }
 
     private void analyzeJarInBackground(File jarFile) {
@@ -135,7 +130,7 @@ public class PackagerController {
             String mainClass = null;
 
             if (manifest != null) {
-              Attributes attributes = manifest.getMainAttributes();
+                Attributes attributes = manifest.getMainAttributes();
                 mainClass = attributes.getValue("Main-Class");
             }
             final String finalMainClass = mainClass;
@@ -155,30 +150,20 @@ public class PackagerController {
 
                 // Set destination directory to same as input by default
                 destDirField.setText(jarFile.getParent());
-
-hideProgressIndicator();
-                showAlert(Alert.AlertType.INFORMATION, "Analysis Complete", "JAR file analyzed successfully. Fields populated where possible.");
             });
 
             jar.close();
         } catch (Exception e) {
             Platform.runLater(() -> {
-                hideProgressIndicator();
                 showAlert(Alert.AlertType.ERROR, "AnalysisError",
                         "Error analyzing JAR file: " + e.getMessage());
             });
         }
     }
 
-
-    private void hideProgressIndicator() {
-        analysisProgress.setVisible(false);
-        analysisProgress.setManaged(false);
-    }
-
     @FXML
     private void browseInputDir(ActionEvent event) {
-        DirectoryChooser directoryChooser =new DirectoryChooser();
+        DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Select Input Directory");
         File selectedDirectory = directoryChooser.showDialog(inputDirField.getScene().getWindow());
         if (selectedDirectory != null) {
@@ -187,8 +172,8 @@ hideProgressIndicator();
     }
 
     @FXML
-    private void browseDestDir(ActionEvent event){
-       DirectoryChooser directoryChooser = new DirectoryChooser();
+    private void browseDestDir(ActionEvent event) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Select Destination Directory");
         File selectedDirectory = directoryChooser.showDialog(destDirField.getScene().getWindow());
         if (selectedDirectory != null) {
@@ -202,7 +187,7 @@ hideProgressIndicator();
         fileChooser.setTitle("Select Main JAR File");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JAR Files", "*.jar"));
         File selectedFile = fileChooser.showOpenDialog(mainJarField.getScene().getWindow());
-if (selectedFile != null) {
+        if (selectedFile != null) {
             mainJarField.setText(selectedFile.getName());
         }
     }
@@ -220,7 +205,7 @@ if (selectedFile != null) {
 
     @FXML
     private void browseLicense(ActionEvent event) {
-        FileChooser fileChooser= new FileChooser();
+        FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select License File");
         File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow());
         if (selectedFile != null) {
@@ -229,7 +214,7 @@ if (selectedFile != null) {
     }
 
     @FXML
-    private void packageApp(ActionEvent event){
+    private void packageApp(ActionEvent event) {
 //Validate inputs
         if (inputDirField.getText().isEmpty() ||
                 appNameField.getText().isEmpty() ||
@@ -247,7 +232,7 @@ if (selectedFile != null) {
 
     private void executePackagingTask() {
         // 创建并显示进度对话框
-        ProgressController progressController=new ProgressController();
+        ProgressController progressController = new ProgressController();
         Platform.runLater(() -> {
             progressController.showProgressDialog(primaryStage);
             progressController.appendText("Executing packaging command...\n\n");
@@ -267,7 +252,7 @@ if (selectedFile != null) {
                 progressController.appendText(commandStr.toString().trim() + "\n\n");
             });
 
-ProcessBuilder processBuilder = new ProcessBuilder(command);
+            ProcessBuilder processBuilder = new ProcessBuilder(command);
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
 
@@ -275,20 +260,20 @@ ProcessBuilder processBuilder = new ProcessBuilder(command);
             String line;
             while ((line = reader.readLine()) != null) {
                 final String logLine = line;
-                Platform.runLater(()-> progressController.appendText(logLine + "\n"));
+                Platform.runLater(() -> progressController.appendText(logLine + "\n"));
             }
 
             int exitCode = process.waitFor();
             if (exitCode == 0) {
                 String destDir = destDirField.getText().isEmpty() ? inputDirField.getText() : destDirField.getText();
                 String packageType = packageTypeCombo.getValue();
-String appName = appNameField.getText();
+                String appName = appNameField.getText();
                 String outputFile = destDir + File.separator + appName + "." + packageType;
 
                 Platform.runLater(() -> {
                     progressController.appendText("\nPackaging completed successfully!\n");
                     progressController.appendText("Output file saved to: " + outputFile + "\n");
-                   progressController.setCompleted();
+                    progressController.setCompleted();
                     showAlert(Alert.AlertType.INFORMATION, "Success", "Application packaged successfully!\nOutput file: " + outputFile);
                 });
             } else {
@@ -298,11 +283,11 @@ String appName = appNameField.getText();
                     progressController.appendText("Please checkthe above output for more details about the error.\n");
                     progressController.appendText("Common issues and solutions:\n");
                     progressController.appendText("1. Make sure the jpackage tool is installed and in your PATH\n");
-                   progressController.appendText("2. Check that all file paths are correct and accessible\n");
+                    progressController.appendText("2. Check that all file paths are correct and accessible\n");
                     progressController.appendText("3. Ensure the main JAR file contains a proper manifest with Main-Class entry\n");
                     progressController.appendText("4. Verify that the input directory contains all necessary files\n");
                     progressController.setFailed();
-showAlert(Alert.AlertType.ERROR, "Packaging Failed", "Packaging failed with exit code: " + exitCode +
+                    showAlert(Alert.AlertType.ERROR, "Packaging Failed", "Packaging failed with exit code: " + exitCode +
                             ". Please check the progress dialog for more details.");
                 });
             }
@@ -387,9 +372,9 @@ showAlert(Alert.AlertType.ERROR, "Packaging Failed", "Packaging failed with exit
         if (!menuGroupField.getText().isEmpty()) {
             command.add("--win-menu-group");
             command.add(quoteIfHasSpace(menuGroupField.getText()));
-}
+        }
 
-if (!javaOptionsField.getText().isEmpty()) {
+        if (!javaOptionsField.getText().isEmpty()) {
             String[] options = javaOptionsField.getText().split(",");
             for (String option : options) {
                 command.add("--java-options");
@@ -398,7 +383,7 @@ if (!javaOptionsField.getText().isEmpty()) {
         }
 
         if (!addModulesField.getText().isEmpty()) {
-command.add("--add-modules");
+            command.add("--add-modules");
             command.add(quoteIfHasSpace(addModulesField.getText()));
         }
 
@@ -409,7 +394,7 @@ command.add("--add-modules");
 
     // Helper method to add double quotes onlyif the string contains spaces
     private String quoteIfHasSpace(String value) {
-        if (value !=null && value.contains(" ")) {
+        if (value != null && value.contains(" ")) {
             return "\"" + value + "\"";
         }
         return value;
@@ -423,80 +408,5 @@ command.add("--add-modules");
         alert.initModality(Modality.WINDOW_MODAL);
         alert.initOwner(primaryStage);
         alert.showAndWait();
-    }
-
-    // Inner class to handle progress dialog
-    private static class ProgressController {
-        private Stage dialog;
-        private TextArea textArea;
-        private ProgressBar progressBar;
-        private Label statusLabel;
-
-public void showProgressDialog(Stage primaryStage) {
-            dialog = new Stage();
-            dialog.initModality(Modality.WINDOW_MODAL);
-            dialog.initOwner(primaryStage);
-            dialog.setTitle("Packaging Progress");
-            
-statusLabel = new Label("Packaging in progress...");
-            
-            progressBar = new ProgressBar();
-            progressBar.setPrefWidth(400);
-            progressBar.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
-            
-            textArea = new TextArea();
-            textArea.setPrefRowCount(15);
-            textArea.setPrefColumnCount(50);
-            textArea.setEditable(false);
-            
-VBox vbox = new VBox(10);
-            vbox.setPadding(new javafx.geometry.Insets(10));
-            
-            // 加载CSS样式
-            try {
-                javafx.scene.Scene scene = new javafx.scene.Scene(vbox);
-                scene.getStylesheets().add(getClass().getResource("dialog.css").toExternalForm());
-dialog.setScene(scene);
-            } catch (Exception e) {
-                // 如果加载CSS失败，使用内联样式作为备选
-                vbox.setStyle("-fx-background-color: linear-gradient(to bottom, #f5f7fa, #e4edf9);");
-                statusLabel.setStyle("-fx-font-weight:bold; -fx-text-fill: #3498db;");
-                progressBar.setStyle("-fx-accent: #2ecc71;");
-                textArea.setStyle("-fx-border-color: #bdc3c7; -fx-background-color: white; -fx-background-radius: 4;");
-                dialog.setScene(new javafx.scene.Scene(vbox));
-            }
-            
-            dialog.setResizable(true);
-            dialog.show();
-        }
-        
-        public void appendText(String text) {
-            if (textArea != null) {
-                textArea.appendText(text);
-            }
-        }
-        
-        public void setCompleted() {
-            if (statusLabel != null){
-                statusLabel.setText("Packaging completed successfully!");
-            }
-            if (progressBar != null) {
-                progressBar.setProgress(1.0);
-            }
-        }
-        
-        public void setFailed() {
-            if (statusLabel != null) {
-                statusLabel.setText("Packaging failed!");
-            }
-            if (progressBar != null) {
-                progressBar.setProgress(0);
-            }
-        }
-public void close() {
-            if (dialog != null) {
-                dialog.close();
-            }
-        }
     }
 }
