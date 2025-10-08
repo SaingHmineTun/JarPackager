@@ -1,7 +1,6 @@
 module it.saimao.jarpackager {
     requires javafx.controls;
     requires javafx.fxml;
-    requires java.xml;
     requires javafx.graphics;
     requires java.desktop;
 
