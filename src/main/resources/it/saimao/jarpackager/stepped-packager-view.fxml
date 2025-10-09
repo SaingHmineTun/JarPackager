@@ -124,7 +124,14 @@
                     <Button onAction="#browseModulePath" text="Browse..."/>
                 </HBox>
 
+                <Label text="Runtime Image:" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                    <TextField fx:id="runtimeImageField" HBox.hgrow="ALWAYS"/>
+                    <Button onAction="#browseRuntimeImage" text="Browse..."/>
+                </HBox>
+
                 <rowConstraints>
+                    <RowConstraints/>
                     <RowConstraints/>
                     <RowConstraints/>
                     <RowConstraints/>
@@ -181,6 +188,7 @@
                     <CheckBox fx:id="winShortcutCheckBox" selected="true" text="--win-shortcut"/>
                     <CheckBox fx:id="winMenuCheckBox" selected="true" text="--win-menu"/>
                     <CheckBox fx:id="winDirChooserCheckBox" selected="true" text="--win-dir-chooser"/>
+                    <CheckBox fx:id="winConsoleCheckBox" text="--win-console"/>
                 </FlowPane>
             </VBox>
 

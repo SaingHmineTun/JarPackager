@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-// d4e8f9a2-3b7c-4f8e-9a1d-2c6f7b8e5a9f
+// UUID: d4e8f9a2-3b7c-4f8e-9a1d-2c6f7b8e5a9f
 
 public class Main extends Application {
 

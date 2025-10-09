@@ -1,4 +1,4 @@
-# JAR Packager Tool
+#JAR Packager Tool
 
 A JavaFX desktop application that simplifies the process of packaging JAR files into native executables (EXE/MSI) for Windows using the `jpackage` tool.
 
@@ -9,7 +9,7 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
 - **Multiple Output Formats**: Supports both EXE and MSI packaging
 - **Dynamic Java Options**: Add multiple Java runtime options with automatic quoting
 - **Icon Support**: Convert PNG/JPG images to ICO format and apply to your application
-- **Windows-Specific Options**: Configure shortcuts, menu entries, and upgrade capabilities
+-**Windows-Specific Options**: Configure shortcuts, menu entries, and upgrade capabilities
 - **Real-time Progress Tracking**: View packaging progress and detailed output in a modal dialog
 
 ## Prerequisites
@@ -23,21 +23,21 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
 1. Click "Browse..." next to "Select JAR File" to choose your application JAR file
 2. The tool will automatically analyze the JAR and populate:
    - Main Class (from JAR manifest)
-   - Application Name (based on JAR filename)
+   - ApplicationName (based on JAR filename)
    - Main JAR File path
    - Input Directory (JAR file location)
 3. Review and modify the following fields if needed:
    - Application Name
    - App Version (optional)
    - Package Type (EXE or MSI)
-   - Destination Directory (where the packaged application will be saved)
+   - Destination Directory (wherethe packaged application will be saved)
 4. Click "Next >>" to proceed to Step 2
 
 #### Step 2: Advanced Options
 1. Icon File (optional):
    - Click "Browse..." to select an icon
    - Supports PNG, JPG, and ICO formats
-   - Non-ICO images will be automatically converted
+   - Non-ICO images willbe automatically converted
 2. Application Metadata (optional):
    - Vendor
    - Copyright
@@ -46,7 +46,7 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
 3. Java Module System (optional):
    - Add Modules (for modular applications)
    - Module Path (directory containing modules)
-4. Click "Next >>" to proceed to Step 3
+4. Click "Next >>" to proceed to Step3
 
 #### Step 3: Windows Options
 1. Windows Configuration:
@@ -55,7 +55,7 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
 2. Windows Options (check/uncheck as needed):
    - Create desktop shortcut
    - Add to Windows Start menu
-   - Enable directory chooser in installer
+   - Enable directory chooserin installer
 3. Java Options Management:
    - Enter Java runtime options in the text field (e.g., `-Xmx2g`, `-Dfile.encoding=UTF-8`)
    - Click "Add" to add additional Java options
@@ -66,7 +66,7 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
 ### Packaging Process
 1. A progress dialog will appear showing real-time output
 2. The process may take a few minutes depending on your application size
-3. Upon completion, you'll see a success message with the output file location
+3. Upon completion, you'll see a success message with the output filelocation
 4. If packaging fails, detailed error information will be displayed in the progress dialog
 
 ## Key Functionality
@@ -85,7 +85,7 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
 - Create desktop shortcuts
 - Add to Windows Start menu
 - Enable directory chooser in installers
-- Set upgrade UUID for application updates
+- Setupgrade UUID for application updates
 
 ## Building Executables
 
@@ -96,7 +96,46 @@ mvn clean package
 jpackage --input target --name JAR-Packager --app-version 1.0 --main-class it.saimao.jarpackager.Main --main-jar jar-packager.jar --type exe --dest target
 ```
 
-## Troubleshooting
+## BuildingNativeExecutable with GraalVM
+
+This project supports building native executables using GraalVM Native Image technology. This allows you to create a standalone executable that doesn't require a separate Java installation to run.
+
+### Prerequisites
+
+1. Install GraalVM (preferably Liberica NIK Full which includes JavaFX support)
+2. Set `GRAALVM_HOME` environment variable pointing to your GraalVM installation
+3. Install Native Image component:
+   ```bash
+   gu install native-image
+   ```
+
+### Building the Native Executable
+
+You can build the native executable in two ways:
+
+#### Method 1: Using the provided batchscript (Windows)
+```cmd
+build-native.bat
+```
+
+#### Method 2: Manual Maven build
+```bash
+# Clean and build the project
+mvn clean package -DskipTests
+
+# Build the native image
+mvn -Pnative native:compile
+```
+
+The native executable will be created inthe `target` directory.
+
+### Notes
+
+- The first build might take considerable time (several minutes) as GraalVM needs to analyze and compile all dependencies
+- Subsequent builds will be faster due to caching
+- Generated executable will be platform-specific (Windows/Linux/macOS)
+
+##Troubleshooting
 
 ### Common Issues
 
@@ -106,7 +145,7 @@ jpackage --input target --name JAR-Packager --app-version 1.0 --main-class it.sa
 
 ### Warning Messages
 
-You may see this warning when running the application:
+Youmay see this warning when running the application:
 ```
 WARNING: java.lang.System::load has been called by com.sun.glass.utils.NativeLibLoader
 ```
@@ -116,9 +155,7 @@ This is a JavaFX internal warning that can be resolved by adding the JVM argumen
 --enable-native-access=javafx.graphics
 ```
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## LicenseThis project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 

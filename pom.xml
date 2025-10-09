@@ -6,16 +6,35 @@
 
     <groupId>it.saimao</groupId>
     <artifactId>JarPackager</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1</version>
     <name>Jar Packager</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.12.1</junit.version>
+        <javafx.version>22.0.1</javafx.version>
+        <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
+        <native.maven.plugin.version>0.10.5</native.maven.plugin.version>
+        <main.class>it.saimao.jarpackager.Main</main.class>
     </properties>
 
     <dependencies>
 
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -44,13 +63,13 @@
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
-                <version>0.0.8</version>
+                <version>${javafx.maven.plugin.version}</version>
                 <executions>
                     <execution>
                         <!-- Default configuration for running with: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>it.saimao.jarpackager.Main</mainClass>
+                            <mainClass>${main.class}</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>
@@ -58,6 +77,38 @@
                             <stripDebug>true</stripDebug>
                             <noHeaderFiles>true</noHeaderFiles>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.gluonhq</groupId>
+                <artifactId>gluonfx-maven-plugin</artifactId>
+                <version>1.0.27</version>
+                <configuration>
+                    <mainClass>it.saimao.jarpackager.Main</mainClass>
+                    <target>android</target>
+                    <reflectionList>
+                        <list>it.saimao.jarpackager.Main</list>
+                        <list>it.saimao.jarpackager.PackagerController</list>
+                        <list>it.saimao.jarpackager.CustomDialogController</list>
+                        <list>it.saimao.jarpackager.ProgressController</list>
+                    </reflectionList>
+                    <graalVMArgs>
+                        <graalVMArg>-Xmx8G</graalVMArg>
+                    </graalVMArgs>
+                    <nativeImageArgs>
+                        <nativeImageArg>--no-fallback</nativeImageArg>
+                        <nativeImageArg>--allow-incomplete-classpath</nativeImageArg>
+                        <nativeImageArg>--report-unsupported-elements-at-runtime</nativeImageArg>
+                        <nativeImageArg>--initialize-at-build-time=it.saimao.jarpackager</nativeImageArg>
+                    </nativeImageArgs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

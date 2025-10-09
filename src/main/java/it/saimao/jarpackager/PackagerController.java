@@ -81,6 +81,9 @@ public class PackagerController {
     private TextField modulePathField;
 
     @FXML
+    private TextField runtimeImageField;
+
+    @FXML
     private VBox step1;
 
     @FXML
@@ -100,6 +103,9 @@ public class PackagerController {
 
     @FXML
     private CheckBox winDirChooserCheckBox;
+
+    @FXML
+    private CheckBox winConsoleCheckBox;
 
     private final List<TextField> javaOptionsFields = new ArrayList<>();
     private final List<HBox> javaOptionsContainers = new ArrayList<>();
@@ -130,7 +136,7 @@ public class PackagerController {
     private void showStep2() {
         //验证步骤1中的必填字段
         if (!validateStep1Fields()) {
-            showAlert("Missing Required Fields", "Please fill in all required fields (marked with *) before proceeding tothenext step.");
+            showAlert("Missing Required Fields", "Please fill in all requiredfields (marked with *) before proceeding tothenext step.");
             return;
         }
 
@@ -251,7 +257,7 @@ public class PackagerController {
                     mainClassField.setText(finalMainClass);
                 }
 
-                // Set app name to jar name
+                // Set appname to jar name
                 appNameField.setText(jarFile.getName().substring(0, jarFile.getName().lastIndexOf(".jar")));
 
                 // Set main jar file name
@@ -260,7 +266,7 @@ public class PackagerController {
                 // Set input directory
                 inputDirField.setText(jarFile.getParent());
 
-                // Set destination directory to same as input by default
+                // Set destinationdirectory to same as input by default
                 destDirField.setText(jarFile.getParent());
             });
 
@@ -305,12 +311,12 @@ public class PackagerController {
 
             // 如果不是ico文件，需要转换
             if (!extension.equals(".ico")) {
-                iconField.setText(filePath + " (will be converted to ICO)");
+                iconField.setText(filePath + "(will be converted to ICO)");
                 try {
                     IcoConverter.convertToIco(filePath, filePath + ".ico");
                     iconField.setText(filePath + ".ico");
                 } catch (IOException e) {
-                    showCustomDialog("Conversion Error", "Error converting to ICO", "Try other file or use ico directly");
+                    showCustomDialog("Conversion Error", "Error converting toICO", "Try other file or use ico directly");
                 }
 
             } else {
@@ -350,11 +356,22 @@ public class PackagerController {
     }
 
     @FXML
+    private void browseRuntimeImage(ActionEvent event) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Select RuntimeImage Directory");
+        directoryChooser.setInitialDirectory(new File(inputDirField.getText()));
+        File selectedDirectory = directoryChooser.showDialog(runtimeImageField.getScene().getWindow());
+        if (selectedDirectory != null) {
+            runtimeImageField.setText(selectedDirectory.getAbsolutePath());
+        }
+    }
+
+    @FXML
     private void packageApp(ActionEvent event) {
         //Validate inputs
         if (inputDirField.getText().isEmpty() || appNameField.getText().isEmpty() || mainClassField.getText().isEmpty() || mainJarField.getText().isEmpty()) {
 
-            showCustomDialog("Missing Required Fields", "Missing Required Fields", "Please fill in all required fields (InputDirectory, Application Name, Main Class, MainJAR)");
+            showCustomDialog("Missing Required Fields", "Missing Required Fields", "Please fill in all required fields(InputDirectory, Application Name, Main Class, MainJAR)");
             return;
         }
 
@@ -363,7 +380,7 @@ public class PackagerController {
     }
 
     private void executePackagingTask() {
-// 创建并显示进度对话框
+//创建并显示进度对话框
         ProgressController progressController = new ProgressController();
         Platform.runLater(() -> {
             progressController.showProgressDialog(primaryStage);
@@ -414,10 +431,10 @@ public class PackagerController {
                     // 添加更多错误信息
                     progressController.appendText("Please check the above output for more details about the error.\n");
                     progressController.appendText("Common issuesand solutions:\n");
-                    progressController.appendText("1. Makesure the jpackage tool is installedand in your PATH\n");
+                    progressController.appendText("1. Makesure thejpackage tool is installedand in your PATH\n");
                     progressController.appendText("2. Check that all filepaths arecorrect and accessible\n");
                     progressController.appendText("3. Ensure the main JAR file contains a proper manifest withMain-Classentry\n");
-                    progressController.appendText("4. Verifythat the input directory contains all necessaryfiles\n");
+                    progressController.appendText("4. Verifythat theinput directory contains all necessaryfiles\n");
                     progressController.setFailed();
                     showCustomDialog("Packaging Failed", "Packaging Failed", "Packaging failed with exit code: " + exitCode + ". Please check the progress dialog formore details.");
                 });
@@ -432,7 +449,7 @@ public class PackagerController {
                 progressController.appendText("Stack trace:\n");
                 progressController.appendText(sw.toString());
                 progressController.setFailed();
-                showCustomDialog("Execution Error", "Execution Error", "Error executing command:" + e.getMessage());
+                showCustomDialog("Execution Error", "ExecutionError", "Error executing command:" + e.getMessage());
             });
         }
     }
@@ -470,7 +487,7 @@ public class PackagerController {
             String iconPath = iconField.getText();
 
             // 检查是否需要转换图标格式
-            if (iconPath.contains("(will be converted to ICO)")) {
+            if (iconPath.contains("(will be convertedto ICO)")) {
                 // 移除标记文本，获取原始路径
                 iconPath = iconPath.replace(" (will be converted to ICO)", "");
             }
@@ -482,7 +499,7 @@ public class PackagerController {
                 //这里应该实现PNG/JPG到ICO的转换逻辑
                 // 为简化示例，我们在这里只是给出提示
                 // 在实际应用中，你可能需要使用图像处理库来完成转换
-                showCustomDialog("Icon Conversion", "Icon Conversion Needed", "The selected icon isnot in ICOformat. You need to convert it to ICO format manually or implement automatic conversion.");
+                showCustomDialog("Icon Conversion", "Icon Conversion Needed", "The selected icon isnot in ICOformat. You need to convert it to ICOformat manually or implement automatic conversion.");
             }
 
             command.add("--icon");
@@ -500,6 +517,10 @@ public class PackagerController {
 
         if (winDirChooserCheckBox.isSelected()) {
             command.add("--win-dir-chooser");
+        }
+
+        if (winConsoleCheckBox.isSelected()) {
+            command.add("--win-console");
         }
 
         if (!upgradeUuidField.getText().isEmpty()) {
@@ -529,6 +550,11 @@ public class PackagerController {
             command.add(quoteIfHasSpace(modulePathField.getText()));
         }
 
+        if (!runtimeImageField.getText().isEmpty()) {
+            command.add("--runtime-image");
+            command.add(quoteIfHasSpace(runtimeImageField.getText()));
+        }
+
         System.out.println(command);
 
         return command;
@@ -542,7 +568,7 @@ public class PackagerController {
         return value;
     }
 
-    // Helper method to always add double quotes
+    // Helper method toalways add double quotes
     private String quoteAlways(String value) {
         if (value != null) {
             return "\"" + value + "\"";
@@ -552,7 +578,7 @@ public class PackagerController {
 
     @FXML
     private void addJavaOption(ActionEvent event) {
-        // Create a new HBox container for the TextField and Button
+        //Create a new HBox container for the TextField and Button
         HBox container = new HBox(5);
         container.getStyleClass().add("hbox");
         // Create a new TextField
@@ -573,11 +599,11 @@ public class PackagerController {
         //Add components to the container
         container.getChildren().addAll(newJavaOptionField, removeButton);
 
-        // Add the new field to our lists
+        // Add the new field toour lists
         javaOptionsFields.add(newJavaOptionField);
         javaOptionsContainers.add(container);
 
-        // Add the container to the java options container
+// Add the container to the java options container
         javaOptionsContainer.getChildren().add(container);
     }
 
