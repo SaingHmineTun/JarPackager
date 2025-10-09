@@ -33,6 +33,9 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
    - Destination Directory (wherethe packaged application will be saved)
 4. Click "Next >>" to proceed to Step 2
 
+<img width="876" height="733" alt="image" src="https://github.com/user-attachments/assets/16e65533-deff-413b-b0f2-982c74d02c6a" />
+
+
 #### Step 2: Advanced Options
 1. Icon File (optional):
    - Click "Browse..." to select an icon
@@ -47,6 +50,9 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
    - Add Modules (for modular applications)
    - Module Path (directory containing modules)
 4. Click "Next >>" to proceed to Step3
+
+<img width="876" height="733" alt="image" src="https://github.com/user-attachments/assets/ca45d23e-6dbb-4d9f-bf3b-ac4f2c3346a6" />
+
 
 #### Step 3: Windows Options
 1. Windows Configuration:
@@ -63,11 +69,17 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
    - Click "Remove" to delete unwanted options
 4. Click "Package" to start the packaging process
 
+<img width="876" height="733" alt="image" src="https://github.com/user-attachments/assets/a968b76c-c0ad-4986-ac57-258ab3818582" />
+
+
 ### Packaging Process
 1. A progress dialog will appear showing real-time output
 2. The process may take a few minutes depending on your application size
 3. Upon completion, you'll see a success message with the output filelocation
 4. If packaging fails, detailed error information will be displayed in the progress dialog
+
+
+<img width="627" height="664" alt="image" src="https://github.com/user-attachments/assets/7fb32dad-4ad7-4873-88cf-35c7fe017fb0" />
 
 ## Key Functionality
 
@@ -161,3 +173,4 @@ This is a JavaFX internal warning that can be resolved by adding the JVM argumen
 
 - Built with JavaFX
 - Uses the `jpackage` tool included in JDK 14+
+
