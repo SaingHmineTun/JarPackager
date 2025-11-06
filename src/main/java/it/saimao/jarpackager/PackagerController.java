@@ -486,19 +486,13 @@ public class PackagerController {
         if (!iconField.getText().isEmpty()) {
             String iconPath = iconField.getText();
 
-            // 检查是否需要转换图标格式
-            if (iconPath.contains("(will be convertedto ICO)")) {
-                // 移除标记文本，获取原始路径
+            if (iconPath.contains("(will be converted to ICO)")) {
                 iconPath = iconPath.replace(" (will be converted to ICO)", "");
             }
 
             String extension = getFileExtension(iconPath).toLowerCase();
 
-            // 如果不是ico文件，需要进行转换
             if (!extension.equals(".ico")) {
-                //这里应该实现PNG/JPG到ICO的转换逻辑
-                // 为简化示例，我们在这里只是给出提示
-                // 在实际应用中，你可能需要使用图像处理库来完成转换
                 showCustomDialog("Icon Conversion", "Icon Conversion Needed", "The selected icon isnot in ICOformat. You need to convert it to ICOformat manually or implement automatic conversion.");
             }
 
@@ -506,7 +500,6 @@ public class PackagerController {
             command.add(quoteIfHasSpace(iconPath));
         }
 
-        // 添加Windows选项（根据复选框状态）
         if (winShortcutCheckBox.isSelected()) {
             command.add("--win-shortcut");
         }
@@ -555,12 +548,34 @@ public class PackagerController {
             command.add(quoteIfHasSpace(runtimeImageField.getText()));
         }
 
+        if (!licenseField.getText().isEmpty()) {
+            command.add("--license-file");
+            command.add(quoteIfHasSpace(licenseField.getText()));
+        }
+
+        if (!descriptionField.getText().isEmpty()) {
+            command.add("--description");
+            command.add(quoteIfHasSpace(descriptionField.getText()));
+        }
+
+        if (!copyrightField.getText().isEmpty()) {
+            command.add("--copyright");
+            command.add(quoteIfHasSpace(copyrightField.getText()));
+        }
+
+        if (!vendorField.getText().isEmpty()) {
+            command.add("--vendor");
+            command.add(quoteIfHasSpace(vendorField.getText()));
+        }
+
+
+
         System.out.println(command);
 
         return command;
     }
 
-    //Helpermethod to add doublequotes onlyif the string contains spaces
+    //Helper method to add double quotes only if the string contains spaces
     private String quoteIfHasSpace(String value) {
         if (value != null && value.contains(" ")) {
             return "\"" + value + "\"";

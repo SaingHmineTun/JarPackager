@@ -6,7 +6,7 @@
 
     <groupId>it.saimao</groupId>
     <artifactId>JarPackager</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
     <name>Jar Packager</name>
 
     <properties>
@@ -77,38 +77,6 @@
                             <stripDebug>true</stripDebug>
                             <noHeaderFiles>true</noHeaderFiles>
                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>com.gluonhq</groupId>
-                <artifactId>gluonfx-maven-plugin</artifactId>
-                <version>1.0.27</version>
-                <configuration>
-                    <mainClass>it.saimao.jarpackager.Main</mainClass>
-                    <target>android</target>
-                    <reflectionList>
-                        <list>it.saimao.jarpackager.Main</list>
-                        <list>it.saimao.jarpackager.PackagerController</list>
-                        <list>it.saimao.jarpackager.CustomDialogController</list>
-                        <list>it.saimao.jarpackager.ProgressController</list>
-                    </reflectionList>
-                    <graalVMArgs>
-                        <graalVMArg>-Xmx8G</graalVMArg>
-                    </graalVMArgs>
-                    <nativeImageArgs>
-                        <nativeImageArg>--no-fallback</nativeImageArg>
-                        <nativeImageArg>--allow-incomplete-classpath</nativeImageArg>
-                        <nativeImageArg>--report-unsupported-elements-at-runtime</nativeImageArg>
-                        <nativeImageArg>--initialize-at-build-time=it.saimao.jarpackager</nativeImageArg>
-                    </nativeImageArgs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>
