@@ -569,9 +569,6 @@ public class PackagerController {
         }
 
 
-
-        System.out.println(command);
-
         return command;
     }
 
