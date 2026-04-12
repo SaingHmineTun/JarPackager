@@ -6,93 +6,82 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 
 /**
- * 简单的PNG/JPG到ICO转换器
+ * Enhanced PNG/JPG to ICO converter with proper scaling
  */
 public class IcoConverter {
 
-    /**
-     * 将图像文件转换为ICO格式
-     *
-     * @param inputImagePath 输入图像路径 (PNG/JPG)
-     * @param outputIcoPath  输出ICO路径
-     * @throws IOException 如果读取或写入文件时出错
-     */
     public static void convertToIco(String inputImagePath, String outputIcoPath) throws IOException {
-        // 读取原始图像
         BufferedImage img = ImageIO.read(new File(inputImagePath));
         if (img == null) {
             throw new IOException("Could not read image: " + inputImagePath);
         }
 
-        // 调整图像大小以适应ICO格式（通常为16x16, 32x32, 48x48等）
-        BufferedImage scaledImg = createMultiResolutionImage(img);
+        // ICO supports up to 256x256
+        BufferedImage scaledImg = scaleImage(img, 256);
 
-        // 写入ICO文件
         writeIcoFile(scaledImg, outputIcoPath);
     }
 
     /**
-     * 创建多分辨率图像
+     * Scales the image to fit within the target size while maintaining aspect ratio
      */
-    private static BufferedImage createMultiResolutionImage(BufferedImage originalImg) {
-        // 对于简化实现，我们只创建一个适当大小的图像
-        int size = Math.min(256, Math.max(originalImg.getWidth(), originalImg.getHeight()));
-        BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2d = img.createGraphics();
+    private static BufferedImage scaleImage(BufferedImage originalImg, int targetSize) {
+        // Create the canvas at target size (256x256)
+        BufferedImage scaledImg = new BufferedImage(targetSize, targetSize, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = scaledImg.createGraphics();
 
-        // 设置渲染提示以获得更好的图像质量
+        // High-quality rendering settings
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-        // 在新图像中居中绘制原始图像
-        int x = (size - originalImg.getWidth()) / 2;
-        int y = (size - originalImg.getHeight()) / 2;
-        g2d.drawImage(originalImg, x, y, null);
+        // Calculate aspect ratio to prevent stretching
+        double ratio = Math.min((double) targetSize / originalImg.getWidth(), (double) targetSize / originalImg.getHeight());
+        int width = (int) (originalImg.getWidth() * ratio);
+        int height = (int) (originalImg.getHeight() * ratio);
+
+        // Center the scaled image
+        int x = (targetSize - width) / 2;
+        int y = (targetSize - height) / 2;
+
+        // DRAW WITH WIDTH AND HEIGHT to force scaling
+        g2d.drawImage(originalImg, x, y, width, height, null);
         g2d.dispose();
 
-        return img;
+        return scaledImg;
     }
 
-    /**
-     * 将图像写入ICO文件
-     */
     private static void writeIcoFile(BufferedImage img, String outputIcoPath) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(outputIcoPath);
              DataOutputStream dos = new DataOutputStream(fos)) {
 
-            // ICO文件头
-            dos.writeByte(0);  // Reserved, must be 0
-            dos.writeByte(0);  // Reserved, must be 0
-            dos.writeByte(1);  // Image type: 1 for ICO, 2 for CUR
-            dos.writeByte(0);  // Image type: 1 for ICO, 2 for CUR
+            // Header
+            dos.writeByte(0);
+            dos.writeByte(0);
+            dos.writeShort(Short.reverseBytes((short) 1)); // Type 1 = ICO
+            dos.writeShort(Short.reverseBytes((short) 1)); // 1 image
 
-            // Number of images in the file (1 in our case)
-            dos.writeByte(1);  // Number of images
-            dos.writeByte(0);  // Number of images
-
-            // 图像目录项
+            // Directory Entry
             int width = img.getWidth();
             int height = img.getHeight();
 
-            dos.writeByte((byte) (width == 256 ? 0 : width));   // Width
-            dos.writeByte((byte) (height == 256 ? 0 : height)); // Height
-            dos.writeByte(0);  // Number of colors in palette (0 = no palette)
-            dos.writeByte(0);  // Reserved
+            // 0 means 256px in ICO format
+            dos.writeByte((byte) (width >= 256 ? 0 : width));
+            dos.writeByte((byte) (height >= 256 ? 0 : height));
+            dos.writeByte(0); // Palette
+            dos.writeByte(0); // Reserved
 
-            dos.writeShort(1); // Color planes
-            dos.writeShort(32); // Bits per pixel
+            dos.writeShort(Short.reverseBytes((short) 1));  // Planes
+            dos.writeShort(Short.reverseBytes((short) 32)); // Bit depth
 
-            // 计算图像大小
+            // Write PNG data into buffer to get size
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(img, "png", baos);
             byte[] imageBytes = baos.toByteArray();
-            int imageSize = imageBytes.length;
 
-            dos.writeInt(Integer.reverseBytes(imageSize)); // Image size in bytes (little-endian)
-            dos.writeInt(Integer.reverseBytes(22)); // Image offset (little-endian)
+            dos.writeInt(Integer.reverseBytes(imageBytes.length));
+            dos.writeInt(Integer.reverseBytes(22)); // Header (6) + Entry (16) = 22
 
-            // 写入实际图像数据 (PNG格式)
             dos.write(imageBytes);
         }
     }
