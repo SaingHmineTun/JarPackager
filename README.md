@@ -23,18 +23,20 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
 Before Step 1, choose the package type (`EXE`, `MSI`, or `app-image`) from the top-level Package Type selector.
 
 #### Step 1: Basic Information
-1. Click "Browse..." next to "Select JAR File" to choose your application JAR file
-   - Or select an Existing App Image folder when you want to build an EXE/MSI from a previously generated app image
-2. The tool will automatically analyze the JAR and populate:
+1. For EXE/MSI output, choose the source:
+   - From JAR
+   - From image folder
+2. Click "Browse" next to "JAR file" or "App image folder" to choose the source files
+3. The tool will automatically analyze the JAR and populate:
    - Main Class (from JAR manifest)
    - ApplicationName (based on JAR filename)
    - Main JAR File path
    - Input Directory (JAR file location)
-3. Review and modify the following fields if needed:
+4. Review and modify the following fields if needed:
    - Application Name
    - App Version (optional)
    - Destination Directory (wherethe packaged application will be saved)
-4. Click "Next >>" to proceed to Step 2
+5. Click "Next" to proceed to Step 2
 
 <img width="876" height="733" alt="image" src="https://github.com/user-attachments/assets/16e65533-deff-413b-b0f2-982c74d02c6a" />
 
@@ -122,7 +124,7 @@ jpackage --input target --name JAR-Packager --app-version 1.0 --main-class it.sa
 
 To create an application image instead of an installer, choose `app-image` in the Package Type field. The tool will run `jpackage --type app-image` and skip installer-only options such as shortcuts, Start menu entries, directory chooser, upgrade UUID, menu group, and license file.
 
-To create an EXE/MSI from an existing app image, choose `exe` or `msi`, select the Existing App Image folder, then package. The tool will run `jpackage --app-image <folder>` and skip JAR, launcher, module, and runtime-image creation options.
+To create an EXE/MSI from an existing app image, choose `exe` or `msi`, select `From image folder`, select the app-image folder, then package. The tool will run `jpackage --app-image <folder>` and skip JAR, launcher, module, and runtime-image creation options.
 
 ## BuildingNativeExecutable with GraalVM
 

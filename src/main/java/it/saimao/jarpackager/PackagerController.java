@@ -7,7 +7,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -110,7 +112,58 @@ public class PackagerController {
     private VBox javaOptionsContainer;
 
     @FXML
+    private HBox sourceModeRow;
+
+    @FXML
     private HBox appImageRow;
+
+    @FXML
+    private Node jarFileLabel;
+
+    @FXML
+    private HBox jarFileRow;
+
+    @FXML
+    private Node inputDirLabel;
+
+    @FXML
+    private HBox inputDirRow;
+
+    @FXML
+    private Node mainClassLabel;
+
+    @FXML
+    private Node mainJarLabel;
+
+    @FXML
+    private Node iconLabel;
+
+    @FXML
+    private HBox iconRow;
+
+    @FXML
+    private Node addModulesLabel;
+
+    @FXML
+    private Node modulePathLabel;
+
+    @FXML
+    private HBox modulePathRow;
+
+    @FXML
+    private Node runtimeImageLabel;
+
+    @FXML
+    private HBox runtimeImageRow;
+
+    @FXML
+    private Node javaOptionsLabel;
+
+    @FXML
+    private RadioButton fromJarRadioButton;
+
+    @FXML
+    private RadioButton fromAppImageRadioButton;
 
     @FXML
     private GridPane windowsInstallerOptionsGrid;
@@ -148,6 +201,12 @@ public class PackagerController {
         packageTypeCombo.getItems().addAll(PACKAGE_TYPE_EXE, PACKAGE_TYPE_MSI, PACKAGE_TYPE_APP_IMAGE);
         packageTypeCombo.setValue(PACKAGE_TYPE_EXE);
         packageTypeCombo.valueProperty().addListener((observable, oldValue, newValue) -> updatePackageTypeOptions());
+
+        ToggleGroup sourceToggleGroup = new ToggleGroup();
+        fromJarRadioButton.setToggleGroup(sourceToggleGroup);
+        fromAppImageRadioButton.setToggleGroup(sourceToggleGroup);
+        sourceToggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> updateSourceModeOptions());
+
         javaOptionsFields.add(javaOptionsField);
         updatePackageTypeOptions();
     }
@@ -155,13 +214,45 @@ public class PackagerController {
     private void updatePackageTypeOptions() {
         boolean appImageSelected = isAppImageType(packageTypeCombo.getValue());
 
+        if (appImageSelected) {
+            fromJarRadioButton.setSelected(true);
+        }
+
+        setManagedAndVisible(sourceModeRow, !appImageSelected);
         setManagedAndVisible(windowsInstallerOptionsGrid, !appImageSelected);
         setManagedAndVisible(winShortcutCheckBox, !appImageSelected);
         setManagedAndVisible(winMenuCheckBox, !appImageSelected);
         setManagedAndVisible(winDirChooserCheckBox, !appImageSelected);
         setManagedAndVisible(winPerUserInstallCheckBox, !appImageSelected);
         setManagedAndVisible(winShortcutPromptCheckBox, !appImageSelected);
-        setManagedAndVisible(appImageRow, !appImageSelected);
+        updateSourceModeOptions();
+    }
+
+    private void updateSourceModeOptions() {
+        boolean jarSourceSelected = isJarSourceSelected();
+        boolean imageSourceSelected = isImageSourceSelected();
+
+        setManagedAndVisible(appImageRow, imageSourceSelected);
+        setManagedAndVisible(jarFileLabel, jarSourceSelected);
+        setManagedAndVisible(jarFileRow, jarSourceSelected);
+        setManagedAndVisible(inputDirLabel, jarSourceSelected);
+        setManagedAndVisible(inputDirRow, jarSourceSelected);
+        setManagedAndVisible(mainClassLabel, jarSourceSelected);
+        setManagedAndVisible(mainClassField, jarSourceSelected);
+        setManagedAndVisible(mainJarLabel, jarSourceSelected);
+        setManagedAndVisible(mainJarField, jarSourceSelected);
+
+        setManagedAndVisible(iconLabel, jarSourceSelected);
+        setManagedAndVisible(iconRow, jarSourceSelected);
+        setManagedAndVisible(addModulesLabel, jarSourceSelected);
+        setManagedAndVisible(addModulesField, jarSourceSelected);
+        setManagedAndVisible(modulePathLabel, jarSourceSelected);
+        setManagedAndVisible(modulePathRow, jarSourceSelected);
+        setManagedAndVisible(runtimeImageLabel, jarSourceSelected);
+        setManagedAndVisible(runtimeImageRow, jarSourceSelected);
+        setManagedAndVisible(javaOptionsLabel, jarSourceSelected);
+        setManagedAndVisible(javaOptionsContainer, jarSourceSelected);
+        setManagedAndVisible(winConsoleCheckBox, jarSourceSelected);
     }
 
     private void setManagedAndVisible(Node node, boolean visible) {
@@ -204,8 +295,8 @@ public class PackagerController {
             return false;
         }
 
-        if (isUsingPrebuiltAppImage()) {
-            return true;
+        if (isImageSourceSelected()) {
+            return !appImageField.getText().isEmpty();
         }
 
         return !jarFileField.getText().isEmpty() && !inputDirField.getText().isEmpty() && !mainClassField.getText().isEmpty() && !mainJarField.getText().isEmpty();
@@ -359,6 +450,9 @@ public class PackagerController {
         directoryChooser.setTitle("Select App Image Directory");
         File selectedDirectory = directoryChooser.showDialog(appImageField.getScene().getWindow());
         if (selectedDirectory != null) {
+            if (!isAppImageType(packageTypeCombo.getValue())) {
+                fromAppImageRadioButton.setSelected(true);
+            }
             appImageField.setText(selectedDirectory.getAbsolutePath());
 
             if (appNameField.getText().isEmpty()) {
@@ -758,16 +852,20 @@ public class PackagerController {
         return PACKAGE_TYPE_APP_IMAGE.equals(packageType);
     }
 
-    private boolean isUsingPrebuiltAppImage() {
-        return isUsingPrebuiltAppImage(packageTypeCombo.getValue());
+    private boolean isJarSourceSelected() {
+        return isAppImageType(packageTypeCombo.getValue()) || fromJarRadioButton.isSelected();
+    }
+
+    private boolean isImageSourceSelected() {
+        return !isAppImageType(packageTypeCombo.getValue()) && fromAppImageRadioButton.isSelected();
     }
 
     private boolean isUsingPrebuiltAppImage(String packageType) {
-        return !isAppImageType(packageType) && !appImageField.getText().isEmpty();
+        return !isAppImageType(packageType) && fromAppImageRadioButton.isSelected();
     }
 
     private String getRequiredFieldsMessage() {
-        if (isUsingPrebuiltAppImage()) {
+        if (isImageSourceSelected()) {
             return "Please fill in Destination Directory, Application Name, and Existing App Image.";
         }
         return "Please fill in Destination Directory, Application Name, and the JAR fields (JAR File, Input Directory, Main Class, Main JAR).";

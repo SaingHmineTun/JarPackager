@@ -39,41 +39,49 @@
                     <ColumnConstraints hgrow="ALWAYS"/>
                 </columnConstraints>
 
-                <HBox fx:id="appImageRow" alignment="CENTER_LEFT" spacing="8.0" GridPane.columnSpan="2">
+                <HBox fx:id="sourceModeRow" alignment="CENTER_LEFT" spacing="8.0" GridPane.columnSpan="2">
+                    <Label minWidth="170.0" styleClass="form-label" text="Source"/>
+                    <HBox alignment="CENTER_LEFT" spacing="14.0" HBox.hgrow="ALWAYS">
+                        <RadioButton fx:id="fromJarRadioButton" selected="true" text="From JAR"/>
+                        <RadioButton fx:id="fromAppImageRadioButton" text="From image folder"/>
+                    </HBox>
+                </HBox>
+
+                <HBox fx:id="appImageRow" alignment="CENTER_LEFT" spacing="8.0" GridPane.columnSpan="2" GridPane.rowIndex="1">
                     <Label minWidth="170.0" styleClass="form-label" text="App image folder"/>
                     <TextField fx:id="appImageField" HBox.hgrow="ALWAYS"/>
                     <Button onAction="#browseAppImageDir" styleClass="secondary-button" text="Browse"/>
                 </HBox>
 
-                <Label styleClass="required" text="JAR file *" GridPane.rowIndex="1"/>
-                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <Label fx:id="jarFileLabel" styleClass="required" text="JAR file *" GridPane.rowIndex="2"/>
+                <HBox fx:id="jarFileRow" alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                     <TextField fx:id="jarFileField" HBox.hgrow="ALWAYS"/>
                     <Button onAction="#browseJarFile" styleClass="secondary-button" text="Browse"/>
                 </HBox>
 
-                <Label styleClass="required" text="Input folder *" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <Label fx:id="inputDirLabel" styleClass="required" text="Input folder *" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                <HBox fx:id="inputDirRow" alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
                     <TextField fx:id="inputDirField" HBox.hgrow="ALWAYS"/>
                     <Button onAction="#browseInputDir" styleClass="secondary-button" text="Browse"/>
                 </HBox>
 
-                <Label styleClass="required" text="Destination *" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                <Label styleClass="required" text="Destination *" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
                     <TextField fx:id="destDirField" HBox.hgrow="ALWAYS"/>
                     <Button onAction="#browseDestDir" styleClass="secondary-button" text="Browse"/>
                 </HBox>
 
-                <Label styleClass="required" text="Application name *" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                <TextField fx:id="appNameField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                <Label styleClass="required" text="Application name *" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                <TextField fx:id="appNameField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
 
-                <Label styleClass="required" text="Main class *" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-                <TextField fx:id="mainClassField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                <Label fx:id="mainClassLabel" styleClass="required" text="Main class *" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+                <TextField fx:id="mainClassField" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
 
-                <Label styleClass="required" text="Main JAR *" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-                <TextField fx:id="mainJarField" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                <Label fx:id="mainJarLabel" styleClass="required" text="Main JAR *" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+                <TextField fx:id="mainJarField" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
 
-                <Label styleClass="form-label" text="Version" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
-                <TextField fx:id="appVersionField" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+                <Label styleClass="form-label" text="Version" GridPane.columnIndex="0" GridPane.rowIndex="8"/>
+                <TextField fx:id="appVersionField" GridPane.columnIndex="1" GridPane.rowIndex="8"/>
             </GridPane>
 
             <Region VBox.vgrow="ALWAYS"/>
@@ -95,8 +103,8 @@
                     <ColumnConstraints hgrow="ALWAYS"/>
                 </columnConstraints>
 
-                <Label styleClass="form-label" text="Icon" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <Label fx:id="iconLabel" styleClass="form-label" text="Icon" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <HBox fx:id="iconRow" alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
                     <TextField fx:id="iconField" HBox.hgrow="ALWAYS"/>
                     <Button onAction="#browseIcon" styleClass="secondary-button" text="Browse"/>
                 </HBox>
@@ -116,17 +124,17 @@
                     <Button onAction="#browseLicense" styleClass="secondary-button" text="Browse"/>
                 </HBox>
 
-                <Label styleClass="form-label" text="Add modules" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                <Label fx:id="addModulesLabel" styleClass="form-label" text="Add modules" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
                 <TextField fx:id="addModulesField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
 
-                <Label styleClass="form-label" text="Module path" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                <Label fx:id="modulePathLabel" styleClass="form-label" text="Module path" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+                <HBox fx:id="modulePathRow" alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                     <TextField fx:id="modulePathField" HBox.hgrow="ALWAYS"/>
                     <Button onAction="#browseModulePath" styleClass="secondary-button" text="Browse"/>
                 </HBox>
 
-                <Label styleClass="form-label" text="Runtime image" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
-                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                <Label fx:id="runtimeImageLabel" styleClass="form-label" text="Runtime image" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+                <HBox fx:id="runtimeImageRow" alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
                     <TextField fx:id="runtimeImageField" HBox.hgrow="ALWAYS"/>
                     <Button onAction="#browseRuntimeImage" styleClass="secondary-button" text="Browse"/>
                 </HBox>
@@ -166,7 +174,7 @@
             </GridPane>
 
             <VBox spacing="8.0">
-                <Label styleClass="form-label" text="Java options"/>
+                <Label fx:id="javaOptionsLabel" styleClass="form-label" text="Java options"/>
                 <VBox fx:id="javaOptionsContainer" spacing="8.0">
                     <HBox alignment="CENTER_LEFT" spacing="8.0">
                         <TextField fx:id="javaOptionsField" HBox.hgrow="ALWAYS"/>

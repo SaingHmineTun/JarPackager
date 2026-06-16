@@ -244,6 +244,31 @@
     -fx-background-color: #111416;
 }
 
+.radio-button {
+    -fx-text-fill: #d8dde7;
+}
+
+.radio-button .radio {
+    -fx-background-color: #22252b;
+    -fx-border-color: #4a5260;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.radio-button:hover .radio {
+    -fx-border-color: #4cc9a7;
+}
+
+.radio-button:selected .radio {
+    -fx-background-color: #22252b;
+    -fx-border-color: #4cc9a7;
+}
+
+.radio-button:selected .dot {
+    -fx-background-color: #4cc9a7;
+}
+
 .text-area {
     -fx-background-color: #22252b;
     -fx-border-color: #3a404c;
