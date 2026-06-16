@@ -10,9 +10,14 @@
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
     </padding>
 
-    <Label styleClass="title-label" text="JAR to EXE/MSI Packager">
+    <Label styleClass="title-label" text="JAR to EXE/MSI/App Image Packager">
 
     </Label>
+
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Label styleClass="required" text="Package Type:*"/>
+        <ComboBox fx:id="packageTypeCombo" prefWidth="140.0"/>
+    </HBox>
 
     <StackPane fx:id="stepContainer">
         <!-- Step 1: Basic Information -->
@@ -62,11 +67,7 @@
                 <Label text="App Version:" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
                 <TextField fx:id="appVersionField" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
 
-                <Label text="Package Type:" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
-                <ComboBox fx:id="packageTypeCombo" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
-
                 <rowConstraints>
-                    <RowConstraints/>
                     <RowConstraints/>
                     <RowConstraints/>
                     <RowConstraints/>
@@ -152,9 +153,9 @@
 
         <!-- Step 3: Windows Specific Options -->
         <VBox fx:id="step3" spacing="15.0" visible="false">
-            <Label styleClass="title-label" text="Step 3: Windows Specific Options"/>
+            <Label styleClass="title-label" text="Step 3: Runtime &amp; Platform Options"/>
 
-            <GridPane hgap="10.0" vgap="10.0">
+            <GridPane fx:id="windowsInstallerOptionsGrid" hgap="10.0" vgap="10.0">
                 <columnConstraints>
                     <ColumnConstraints minWidth="150.0"/>
                     <ColumnConstraints hgrow="ALWAYS"/>
@@ -166,7 +167,15 @@
                 <Label text="Menu Group:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
                 <TextField fx:id="menuGroupField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 
+                <Label text="Help URL:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <TextField fx:id="winHelpUrlField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                <Label text="Update URL:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                <TextField fx:id="winUpdateUrlField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
                 <rowConstraints>
+                    <RowConstraints/>
+                    <RowConstraints/>
                     <RowConstraints/>
                     <RowConstraints/>
                 </rowConstraints>
@@ -188,6 +197,8 @@
                     <CheckBox fx:id="winShortcutCheckBox" selected="true" text="--win-shortcut"/>
                     <CheckBox fx:id="winMenuCheckBox" selected="true" text="--win-menu"/>
                     <CheckBox fx:id="winDirChooserCheckBox" selected="true" text="--win-dir-chooser"/>
+                    <CheckBox fx:id="winPerUserInstallCheckBox" text="--win-per-user-install"/>
+                    <CheckBox fx:id="winShortcutPromptCheckBox" text="--win-shortcut-prompt"/>
                     <CheckBox fx:id="winConsoleCheckBox" text="--win-console"/>
                 </FlowPane>
             </VBox>

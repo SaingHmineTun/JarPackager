@@ -6,7 +6,7 @@
 
     <groupId>it.saimao</groupId>
     <artifactId>JarPackager</artifactId>
-    <version>1.3</version>
+    <version>1.4</version>
     <name>Jar Packager</name>
 
     <properties>

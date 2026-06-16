@@ -8,6 +8,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
+import javafx.scene.Node;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
@@ -25,6 +27,9 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 public class PackagerController {
+    private static final String PACKAGE_TYPE_EXE = "exe";
+    private static final String PACKAGE_TYPE_MSI = "msi";
+    private static final String PACKAGE_TYPE_APP_IMAGE = "app-image";
 
     @FXML
     private TextField jarFileField;
@@ -72,6 +77,12 @@ public class PackagerController {
     private TextField menuGroupField;
 
     @FXML
+    private TextField winHelpUrlField;
+
+    @FXML
+    private TextField winUpdateUrlField;
+
+    @FXML
     private TextField javaOptionsField;
 
     @FXML
@@ -96,6 +107,9 @@ public class PackagerController {
     private VBox javaOptionsContainer;
 
     @FXML
+    private GridPane windowsInstallerOptionsGrid;
+
+    @FXML
     private CheckBox winShortcutCheckBox;
 
     @FXML
@@ -103,6 +117,12 @@ public class PackagerController {
 
     @FXML
     private CheckBox winDirChooserCheckBox;
+
+    @FXML
+    private CheckBox winPerUserInstallCheckBox;
+
+    @FXML
+    private CheckBox winShortcutPromptCheckBox;
 
     @FXML
     private CheckBox winConsoleCheckBox;
@@ -119,9 +139,29 @@ public class PackagerController {
 
     @FXML
     public void initialize() {
-        packageTypeCombo.getItems().addAll("exe", "msi");
-        packageTypeCombo.setValue("exe");
+        packageTypeCombo.getItems().addAll(PACKAGE_TYPE_EXE, PACKAGE_TYPE_MSI, PACKAGE_TYPE_APP_IMAGE);
+        packageTypeCombo.setValue(PACKAGE_TYPE_EXE);
+        packageTypeCombo.valueProperty().addListener((observable, oldValue, newValue) -> updatePackageTypeOptions());
         javaOptionsFields.add(javaOptionsField);
+        updatePackageTypeOptions();
+    }
+
+    private void updatePackageTypeOptions() {
+        boolean appImageSelected = isAppImageType(packageTypeCombo.getValue());
+
+        setManagedAndVisible(windowsInstallerOptionsGrid, !appImageSelected);
+        setManagedAndVisible(winShortcutCheckBox, !appImageSelected);
+        setManagedAndVisible(winMenuCheckBox, !appImageSelected);
+        setManagedAndVisible(winDirChooserCheckBox, !appImageSelected);
+        setManagedAndVisible(winPerUserInstallCheckBox, !appImageSelected);
+        setManagedAndVisible(winShortcutPromptCheckBox, !appImageSelected);
+    }
+
+    private void setManagedAndVisible(Node node, boolean visible) {
+        if (node != null) {
+            node.setManaged(visible);
+            node.setVisible(visible);
+        }
     }
 
     //步骤导航方法
@@ -389,16 +429,23 @@ public class PackagerController {
 
         //Buildj package command
         List<String> command = buildJPackageCommand();
+        String packageType = getCommandOptionValue(command, "--type");
+        String appName = getCommandOptionValue(command, "--name");
+        String destDir = getCommandOptionValue(command, "--dest");
+        if (destDir.isEmpty()) {
+            destDir = getCommandOptionValue(command, "--input");
+        }
+        boolean appImageSelected = isAppImageType(packageType);
 
         try {
             //在进度对话框中显示执行的命令
-            StringBuilder commandStr = new StringBuilder();
-            for (String part : command) {
-                commandStr.append(part).append(" ");
-            }
+            String commandStr = formatCommandForDisplay(command);
             Platform.runLater(() -> {
+                if (appImageSelected) {
+                    progressController.appendText("Creating an application image. Installer-only options will be ignored.\n\n");
+                }
                 progressController.appendText("Command: ");
-                progressController.appendText(commandStr.toString().trim() + "\n\n");
+                progressController.appendText(commandStr + "\n\n");
             });
 
             ProcessBuilder processBuilder = new ProcessBuilder(command);
@@ -414,16 +461,14 @@ public class PackagerController {
 
             int exitCode = process.waitFor();
             if (exitCode == 0) {
-                String destDir = destDirField.getText().isEmpty() ? inputDirField.getText() : destDirField.getText();
-                String packageType = packageTypeCombo.getValue();
-                String appName = appNameField.getText();
-                String outputFile = destDir + File.separator + appName + "." + packageType;
+                String outputPath = getExpectedOutputPath(destDir, packageType, appName);
+                String outputType = appImageSelected ? "image" : "file";
 
                 Platform.runLater(() -> {
                     progressController.appendText("\nPackaging completed successfully!\n");
-                    progressController.appendText("Output file saved to: " + outputFile + "\n");
+                    progressController.appendText("Output " + outputType + " saved to: " + outputPath + "\n");
                     progressController.setCompleted();
-                    showCustomDialog("Success", "Packaging Completed", "Application packaged successfully!\nOutput file: " + outputFile);
+                    showCustomDialog("Success", "Packaging Completed", "Application packaged successfully!\nOutput " + outputType + ": " + outputPath);
                 });
             } else {
                 Platform.runLater(() -> {
@@ -456,38 +501,41 @@ public class PackagerController {
 
     private List<String> buildJPackageCommand() {
         List<String> command = new ArrayList<>();
+        String packageType = packageTypeCombo.getValue();
+        boolean appImageSelected = isAppImageType(packageType);
+
         command.add("jpackage");
 
         command.add("--input");
-        command.add(quoteIfHasSpace(inputDirField.getText()));
+        command.add(inputDirField.getText());
 
         command.add("--name");
-        command.add(quoteIfHasSpace(appNameField.getText()));
+        command.add(appNameField.getText());
 
         if (!appVersionField.getText().isEmpty()) {
             command.add("--app-version");
-            command.add(quoteIfHasSpace(appVersionField.getText()));
+            command.add(appVersionField.getText());
         }
 
         command.add("--main-class");
-        command.add(quoteIfHasSpace(mainClassField.getText()));
+        command.add(mainClassField.getText());
 
         command.add("--main-jar");
-        command.add(quoteIfHasSpace(mainJarField.getText()));
+        command.add(mainJarField.getText());
 
         command.add("--type");
-        command.add(packageTypeCombo.getValue());
+        command.add(packageType);
 
         if (!destDirField.getText().isEmpty()) {
             command.add("--dest");
-            command.add(quoteIfHasSpace(destDirField.getText()));
+            command.add(destDirField.getText());
         }
 
         if (!iconField.getText().isEmpty()) {
             String iconPath = iconField.getText();
 
             if (iconPath.contains("(will be converted to ICO)")) {
-                iconPath = iconPath.replace(" (will be converted to ICO)", "");
+                iconPath = iconPath.replace("(will be converted to ICO)", "").trim();
             }
 
             String extension = getFileExtension(iconPath).toLowerCase();
@@ -497,95 +545,149 @@ public class PackagerController {
             }
 
             command.add("--icon");
-            command.add(quoteIfHasSpace(iconPath));
+            command.add(iconPath);
         }
 
-        if (winShortcutCheckBox.isSelected()) {
-            command.add("--win-shortcut");
-        }
+        if (!appImageSelected) {
+            if (winShortcutCheckBox.isSelected()) {
+                command.add("--win-shortcut");
+            }
 
-        if (winMenuCheckBox.isSelected()) {
-            command.add("--win-menu");
-        }
+            if (winMenuCheckBox.isSelected()) {
+                command.add("--win-menu");
+            }
 
-        if (winDirChooserCheckBox.isSelected()) {
-            command.add("--win-dir-chooser");
+            if (winDirChooserCheckBox.isSelected()) {
+                command.add("--win-dir-chooser");
+            }
+
+            if (winPerUserInstallCheckBox.isSelected()) {
+                command.add("--win-per-user-install");
+            }
+
+            if (winShortcutPromptCheckBox.isSelected()) {
+                command.add("--win-shortcut-prompt");
+            }
         }
 
         if (winConsoleCheckBox.isSelected()) {
             command.add("--win-console");
         }
 
-        if (!upgradeUuidField.getText().isEmpty()) {
-            command.add("--win-upgrade-uuid");
-            command.add(quoteIfHasSpace(upgradeUuidField.getText()));
-        }
+        if (!appImageSelected) {
+            if (!upgradeUuidField.getText().isEmpty()) {
+                command.add("--win-upgrade-uuid");
+                command.add(upgradeUuidField.getText());
+            }
 
-        if (!menuGroupField.getText().isEmpty()) {
-            command.add("--win-menu-group");
-            command.add(quoteIfHasSpace(menuGroupField.getText()));
+            if (!menuGroupField.getText().isEmpty()) {
+                command.add("--win-menu-group");
+                command.add(menuGroupField.getText());
+            }
+
+            if (!winHelpUrlField.getText().isEmpty()) {
+                command.add("--win-help-url");
+                command.add(winHelpUrlField.getText());
+            }
+
+            if (!winUpdateUrlField.getText().isEmpty()) {
+                command.add("--win-update-url");
+                command.add(winUpdateUrlField.getText());
+            }
         }
 
         for (TextField field : javaOptionsFields) {
             if (!field.getText().isEmpty()) {
                 command.add("--java-options");
-                command.add(quoteAlways(field.getText().trim()));
+                command.add(field.getText().trim());
             }
         }
 
         if (!addModulesField.getText().isEmpty()) {
             command.add("--add-modules");
-            command.add(quoteIfHasSpace(addModulesField.getText()));
+            command.add(addModulesField.getText());
         }
 
         if (!modulePathField.getText().isEmpty()) {
             command.add("--module-path");
-            command.add(quoteIfHasSpace(modulePathField.getText()));
+            command.add(modulePathField.getText());
         }
 
         if (!runtimeImageField.getText().isEmpty()) {
             command.add("--runtime-image");
-            command.add(quoteIfHasSpace(runtimeImageField.getText()));
+            command.add(runtimeImageField.getText());
         }
 
-        if (!licenseField.getText().isEmpty()) {
+        if (!appImageSelected && !licenseField.getText().isEmpty()) {
             command.add("--license-file");
-            command.add(quoteIfHasSpace(licenseField.getText()));
+            command.add(licenseField.getText());
         }
 
         if (!descriptionField.getText().isEmpty()) {
             command.add("--description");
-            command.add(quoteIfHasSpace(descriptionField.getText()));
+            command.add(descriptionField.getText());
         }
 
         if (!copyrightField.getText().isEmpty()) {
             command.add("--copyright");
-            command.add(quoteIfHasSpace(copyrightField.getText()));
+            command.add(copyrightField.getText());
         }
 
         if (!vendorField.getText().isEmpty()) {
             command.add("--vendor");
-            command.add(quoteIfHasSpace(vendorField.getText()));
+            command.add(vendorField.getText());
         }
 
 
         return command;
     }
 
-    //Helper method to add double quotes only if the string contains spaces
-    private String quoteIfHasSpace(String value) {
-        if (value != null && value.contains(" ")) {
-            return "\"" + value + "\"";
+    private String formatCommandForDisplay(List<String> command) {
+        StringBuilder commandStr = new StringBuilder();
+        for (String part : command) {
+            if (commandStr.length() > 0) {
+                commandStr.append(" ");
+            }
+            commandStr.append(quoteForDisplay(part));
         }
-        return value;
+        return commandStr.toString();
     }
 
-    // Helper method toalways add double quotes
-    private String quoteAlways(String value) {
-        if (value != null) {
-            return "\"" + value + "\"";
+    private String quoteForDisplay(String value) {
+        if (value == null) {
+            return "";
         }
-        return value;
+
+        boolean needsQuoting = value.isEmpty() || value.chars().anyMatch(Character::isWhitespace) || value.contains("\"");
+        String escapedValue = value.replace("\"", "\\\"");
+        return needsQuoting ? "\"" + escapedValue + "\"" : escapedValue;
+    }
+
+    private String getCommandOptionValue(List<String> command, String option) {
+        for (int i = 0; i < command.size() - 1; i++) {
+            if (option.equals(command.get(i))) {
+                return command.get(i + 1);
+            }
+        }
+        return "";
+    }
+
+    private String getExpectedOutputPath(String destDir, String packageType, String appName) {
+        if (isAppImageType(packageType)) {
+            return destDir + File.separator + getAppImageDirectoryName(appName);
+        }
+        return destDir + File.separator + appName + "." + packageType;
+    }
+
+    private String getAppImageDirectoryName(String appName) {
+        if (System.getProperty("os.name", "").toLowerCase().contains("mac")) {
+            return appName + ".app";
+        }
+        return appName;
+    }
+
+    private boolean isAppImageType(String packageType) {
+        return PACKAGE_TYPE_APP_IMAGE.equals(packageType);
     }
 
     @FXML

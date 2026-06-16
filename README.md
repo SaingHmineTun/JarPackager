@@ -1,15 +1,15 @@
 #JAR Packager Tool
 
-A JavaFX desktop application that simplifies the process of packaging JAR files into native executables (EXE/MSI) for Windows using the `jpackage` tool.
+A JavaFX desktop application that simplifies the process of packaging JAR files into native executables, installers, and application images using the `jpackage` tool.
 
 ## Features
 
 - **Step-by-Step Wizard Interface**: Intuitive three-step process for easy configuration
 - **JAR Analysis**: Automatically extracts main class and other information from JAR manifest
-- **Multiple Output Formats**: Supports both EXE and MSI packaging
+- **Multiple Output Formats**: Supports EXE, MSI, and app-image packaging
 - **Dynamic Java Options**: Add multiple Java runtime options with automatic quoting
 - **Icon Support**: Convert PNG/JPG images to ICO format and apply to your application
--**Windows-Specific Options**: Configure shortcuts, menu entries, and upgrade capabilities
+- **Windows-Specific Options**: Configure shortcuts, menu entries, per-user installs, support/update URLs, and upgrade capabilities
 - **Real-time Progress Tracking**: View packaging progress and detailed output in a modal dialog
 
 ## Prerequisites
@@ -18,6 +18,8 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
 - `jpackage` tool (included in JDK 14+)
 
 ### Step-by-Step Guide
+
+Before Step 1, choose the package type (`EXE`, `MSI`, or `app-image`) from the top-level Package Type selector.
 
 #### Step 1: Basic Information
 1. Click "Browse..." next to "Select JAR File" to choose your application JAR file
@@ -29,7 +31,6 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
 3. Review and modify the following fields if needed:
    - Application Name
    - App Version (optional)
-   - Package Type (EXE or MSI)
    - Destination Directory (wherethe packaged application will be saved)
 4. Click "Next >>" to proceed to Step 2
 
@@ -58,10 +59,15 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
 1. Windows Configuration:
    - Upgrade UUID (for application updates)
    - Menu Group (Start menu folder name)
+   - Help URL
+   - Update URL
 2. Windows Options (check/uncheck as needed):
    - Create desktop shortcut
    - Add to Windows Start menu
    - Enable directory chooserin installer
+   - Install per user
+   - Ask users whether shortcuts should be created
+   - Create a console launcher
 3. Java Options Management:
    - Enter Java runtime options in the text field (e.g., `-Xmx2g`, `-Dfile.encoding=UTF-8`)
    - Click "Add" to add additional Java options
@@ -97,7 +103,11 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
 - Create desktop shortcuts
 - Add to Windows Start menu
 - Enable directory chooser in installers
-- Setupgrade UUID for application updates
+- Install per user
+- Prompt users before creating shortcuts
+- Create a console launcher
+- Set help/update URLs
+- Set upgrade UUID for application updates
 
 ## Building Executables
 
@@ -107,6 +117,8 @@ To create a native executable of the JAR Packager Tool itself:
 mvn clean package
 jpackage --input target --name JAR-Packager --app-version 1.0 --main-class it.saimao.jarpackager.Main --main-jar jar-packager.jar --type exe --dest target
 ```
+
+To create an application image instead of an installer, choose `app-image` in the Package Type field. The tool will run `jpackage --type app-image` and skip installer-only options such as shortcuts, Start menu entries, directory chooser, upgrade UUID, menu group, and license file.
 
 ## BuildingNativeExecutable with GraalVM
 
@@ -173,4 +185,3 @@ This is a JavaFX internal warning that can be resolved by adding the JVM argumen
 
 - Built with JavaFX
 - Uses the `jpackage` tool included in JDK 14+
-
