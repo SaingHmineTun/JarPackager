@@ -3,211 +3,195 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<VBox prefWidth="500.0" spacing="15.0" styleClass="vbox" stylesheets="@style.css"
+<VBox prefHeight="640.0" prefWidth="760.0" spacing="18.0" styleClass="app-root" stylesheets="@style.css"
       xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="it.saimao.jarpackager.PackagerController">
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+        <Insets bottom="24.0" left="24.0" right="24.0" top="24.0"/>
     </padding>
 
-    <Label styleClass="title-label" text="JAR to EXE/MSI/App Image Packager">
+    <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="top-bar">
+        <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+            <Label styleClass="app-title" text="JAR Packager"/>
+            <Label styleClass="app-caption" text="jpackage"/>
+        </VBox>
 
-    </Label>
+        <HBox alignment="CENTER_LEFT" spacing="8.0" styleClass="package-picker">
+            <Label styleClass="form-label" text="Output"/>
+            <ComboBox fx:id="packageTypeCombo" prefWidth="140.0"/>
+        </HBox>
 
-    <HBox alignment="CENTER_LEFT" spacing="10.0">
-        <Label styleClass="required" text="Package Type:*"/>
-        <ComboBox fx:id="packageTypeCombo" prefWidth="140.0"/>
+        <Button onAction="#checkJdkInfo" styleClass="secondary-button" text="Check JDK"/>
     </HBox>
 
-    <StackPane fx:id="stepContainer">
-        <!-- Step 1: Basic Information -->
-        <VBox fx:id="step1" spacing="15.0">
-            <Label styleClass="title-label" text="Step 1: Basic Information"/>
+    <Separator/>
 
-            <HBox alignment="CENTER_RIGHT">
-                <Label maxWidth="1.7976931348623157E308"
-                       text="Click &quot;Check JDK&quot; to know what JDK are you using" HBox.hgrow="ALWAYS"/>
-                <Button onAction="#checkJdkInfo" text="Check JDK"/>
+    <StackPane fx:id="stepContainer" VBox.vgrow="ALWAYS">
+        <VBox fx:id="step1" spacing="18.0" styleClass="step-pane">
+            <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="step-header">
+                <Label styleClass="step-pill" text="1"/>
+                <Label styleClass="section-title" text="Application"/>
             </HBox>
 
-            <GridPane hgap="10.0" vgap="10.0">
+            <GridPane hgap="14.0" styleClass="form-grid" vgap="12.0">
                 <columnConstraints>
-                    <ColumnConstraints minWidth="150.0"/>
+                    <ColumnConstraints minWidth="170.0" prefWidth="170.0"/>
                     <ColumnConstraints hgrow="ALWAYS"/>
                 </columnConstraints>
 
-                <Label styleClass="required" text="Select JAR File:*"/>
-                <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="1">
+                <HBox fx:id="appImageRow" alignment="CENTER_LEFT" spacing="8.0" GridPane.columnSpan="2">
+                    <Label minWidth="170.0" styleClass="form-label" text="App image folder"/>
+                    <TextField fx:id="appImageField" HBox.hgrow="ALWAYS"/>
+                    <Button onAction="#browseAppImageDir" styleClass="secondary-button" text="Browse"/>
+                </HBox>
+
+                <Label styleClass="required" text="JAR file *" GridPane.rowIndex="1"/>
+                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                     <TextField fx:id="jarFileField" HBox.hgrow="ALWAYS"/>
-                    <Button onAction="#browseJarFile" text="Browse..."/>
+                    <Button onAction="#browseJarFile" styleClass="secondary-button" text="Browse"/>
                 </HBox>
 
-                <Label styleClass="required" text="Input Directory:*" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <Label styleClass="required" text="Input folder *" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                     <TextField fx:id="inputDirField" HBox.hgrow="ALWAYS"/>
-                    <Button onAction="#browseInputDir" text="Browse..."/>
+                    <Button onAction="#browseInputDir" styleClass="secondary-button" text="Browse"/>
                 </HBox>
 
-                <Label styleClass="required" text="Destination Directory:*" GridPane.columnIndex="0"
-                       GridPane.rowIndex="2"/>
-                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <Label styleClass="required" text="Destination *" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
                     <TextField fx:id="destDirField" HBox.hgrow="ALWAYS"/>
-                    <Button onAction="#browseDestDir" text="Browse..."/>
+                    <Button onAction="#browseDestDir" styleClass="secondary-button" text="Browse"/>
                 </HBox>
 
-                <Label styleClass="required" text="ApplicationName:*" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                <TextField fx:id="appNameField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                <Label styleClass="required" text="Application name *" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                <TextField fx:id="appNameField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
 
-                <Label styleClass="required" text="Main Class:*" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                <TextField fx:id="mainClassField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                <Label styleClass="required" text="Main class *" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                <TextField fx:id="mainClassField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
 
-                <Label styleClass="required" text="Main JAR File:*" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-                <TextField fx:id="mainJarField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                <Label styleClass="required" text="Main JAR *" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+                <TextField fx:id="mainJarField" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
 
-                <Label text="App Version:" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-                <TextField fx:id="appVersionField" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
-
-                <rowConstraints>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                </rowConstraints>
+                <Label styleClass="form-label" text="Version" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+                <TextField fx:id="appVersionField" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
             </GridPane>
 
             <Region VBox.vgrow="ALWAYS"/>
 
-            <HBox alignment="BOTTOM_RIGHT">
-                <Button onAction="#showStep2" style="-fx-font-weight: bold;" text="Next &gt;&gt;"/>
+            <HBox alignment="CENTER_RIGHT" styleClass="action-bar">
+                <Button onAction="#showStep2" styleClass="primary-button" text="Next"/>
             </HBox>
         </VBox>
 
-        <!-- Step 2: Advanced Options -->
-        <VBox fx:id="step2" spacing="15.0" visible="false">
-            <Label styleClass="title-label" text="Step 2: Advanced Options"/>
+        <VBox fx:id="step2" spacing="18.0" styleClass="step-pane" visible="false">
+            <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="step-header">
+                <Label styleClass="step-pill" text="2"/>
+                <Label styleClass="section-title" text="Metadata &amp; Runtime"/>
+            </HBox>
 
-            <GridPane hgap="10.0" vgap="10.0">
+            <GridPane hgap="14.0" styleClass="form-grid" vgap="12.0">
                 <columnConstraints>
-                    <ColumnConstraints minWidth="150.0"/>
+                    <ColumnConstraints minWidth="170.0" prefWidth="170.0"/>
                     <ColumnConstraints hgrow="ALWAYS"/>
                 </columnConstraints>
 
-                <Label text="Icon File:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <Label styleClass="form-label" text="Icon" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
                     <TextField fx:id="iconField" HBox.hgrow="ALWAYS"/>
-                    <Button onAction="#browseIcon" text="Browse..."/>
+                    <Button onAction="#browseIcon" styleClass="secondary-button" text="Browse"/>
                 </HBox>
 
-                <Label text="Vendor:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <Label styleClass="form-label" text="Vendor" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
                 <TextField fx:id="vendorField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 
-                <Label text="Copyright:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <Label styleClass="form-label" text="Copyright" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
                 <TextField fx:id="copyrightField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
 
-                <Label text="Description:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                <Label styleClass="form-label" text="Description" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
                 <TextField fx:id="descriptionField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
 
-                <Label text="License File:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                <Label styleClass="form-label" text="License" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
                     <TextField fx:id="licenseField" HBox.hgrow="ALWAYS"/>
-                    <Button onAction="#browseLicense" text="Browse..."/>
+                    <Button onAction="#browseLicense" styleClass="secondary-button" text="Browse"/>
                 </HBox>
 
-                <Label text="AddModules:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                <Label styleClass="form-label" text="Add modules" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
                 <TextField fx:id="addModulesField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
 
-                <Label text="Module Path:" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                <Label styleClass="form-label" text="Module path" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                     <TextField fx:id="modulePathField" HBox.hgrow="ALWAYS"/>
-                    <Button onAction="#browseModulePath" text="Browse..."/>
+                    <Button onAction="#browseModulePath" styleClass="secondary-button" text="Browse"/>
                 </HBox>
 
-                <Label text="Runtime Image:" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
-                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                <Label styleClass="form-label" text="Runtime image" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
                     <TextField fx:id="runtimeImageField" HBox.hgrow="ALWAYS"/>
-                    <Button onAction="#browseRuntimeImage" text="Browse..."/>
+                    <Button onAction="#browseRuntimeImage" styleClass="secondary-button" text="Browse"/>
                 </HBox>
-
-                <rowConstraints>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                </rowConstraints>
             </GridPane>
 
             <Region VBox.vgrow="ALWAYS"/>
 
-            <HBox alignment="BOTTOM_RIGHT" spacing="10.0">
-                <Button onAction="#showStep1" style="-fx-font-weight: bold;" text="&lt;&lt; Back"/>
-                <Button onAction="#showStep3" style="-fx-font-weight: bold;" text="Next &gt;&gt;"/>
+            <HBox alignment="CENTER_RIGHT" spacing="10.0" styleClass="action-bar">
+                <Button onAction="#showStep1" styleClass="secondary-button" text="Back"/>
+                <Button onAction="#showStep3" styleClass="primary-button" text="Next"/>
             </HBox>
         </VBox>
 
-        <!-- Step 3: Windows Specific Options -->
-        <VBox fx:id="step3" spacing="15.0" visible="false">
-            <Label styleClass="title-label" text="Step 3: Runtime &amp; Platform Options"/>
+        <VBox fx:id="step3" spacing="18.0" styleClass="step-pane" visible="false">
+            <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="step-header">
+                <Label styleClass="step-pill" text="3"/>
+                <Label styleClass="section-title" text="Installer Options"/>
+            </HBox>
 
-            <GridPane fx:id="windowsInstallerOptionsGrid" hgap="10.0" vgap="10.0">
+            <GridPane fx:id="windowsInstallerOptionsGrid" hgap="14.0" styleClass="form-grid" vgap="12.0">
                 <columnConstraints>
-                    <ColumnConstraints minWidth="150.0"/>
+                    <ColumnConstraints minWidth="170.0" prefWidth="170.0"/>
                     <ColumnConstraints hgrow="ALWAYS"/>
                 </columnConstraints>
 
-                <Label text="UpgradeUUID:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <Label styleClass="form-label" text="Upgrade UUID" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
                 <TextField fx:id="upgradeUuidField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
-                <Label text="Menu Group:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <Label styleClass="form-label" text="Menu group" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
                 <TextField fx:id="menuGroupField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 
-                <Label text="Help URL:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <Label styleClass="form-label" text="Help URL" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
                 <TextField fx:id="winHelpUrlField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
 
-                <Label text="Update URL:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                <Label styleClass="form-label" text="Update URL" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
                 <TextField fx:id="winUpdateUrlField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-
-                <rowConstraints>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                </rowConstraints>
             </GridPane>
 
-            <VBox spacing="10.0">
-                <Label text="Java Options:"/>
-                <VBox fx:id="javaOptionsContainer" spacing="5.0">
-                    <HBox spacing="5.0">
+            <VBox spacing="8.0">
+                <Label styleClass="form-label" text="Java options"/>
+                <VBox fx:id="javaOptionsContainer" spacing="8.0">
+                    <HBox alignment="CENTER_LEFT" spacing="8.0">
                         <TextField fx:id="javaOptionsField" HBox.hgrow="ALWAYS"/>
-                        <Button onAction="#addJavaOption" text="Add"/>
+                        <Button onAction="#addJavaOption" styleClass="secondary-button" text="Add option"/>
                     </HBox>
                 </VBox>
             </VBox>
 
             <VBox spacing="10.0">
-                <Label text="Windows Options:"/>
-                <FlowPane hgap="20.0" vgap="10.0">
-                    <CheckBox fx:id="winShortcutCheckBox" selected="true" text="--win-shortcut"/>
-                    <CheckBox fx:id="winMenuCheckBox" selected="true" text="--win-menu"/>
-                    <CheckBox fx:id="winDirChooserCheckBox" selected="true" text="--win-dir-chooser"/>
-                    <CheckBox fx:id="winPerUserInstallCheckBox" text="--win-per-user-install"/>
-                    <CheckBox fx:id="winShortcutPromptCheckBox" text="--win-shortcut-prompt"/>
-                    <CheckBox fx:id="winConsoleCheckBox" text="--win-console"/>
+                <Label styleClass="form-label" text="Windows options"/>
+                <FlowPane hgap="12.0" vgap="10.0">
+                    <CheckBox fx:id="winShortcutCheckBox" selected="true" text="Desktop shortcut"/>
+                    <CheckBox fx:id="winMenuCheckBox" selected="true" text="Start menu"/>
+                    <CheckBox fx:id="winDirChooserCheckBox" selected="true" text="Install folder dialog"/>
+                    <CheckBox fx:id="winPerUserInstallCheckBox" text="Per-user install"/>
+                    <CheckBox fx:id="winShortcutPromptCheckBox" text="Shortcut prompt"/>
+                    <CheckBox fx:id="winConsoleCheckBox" text="Console launcher"/>
                 </FlowPane>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
 
-            <HBox alignment="BOTTOM_RIGHT" spacing="10.0">
-                <Button onAction="#showStep2" style="-fx-font-weight: bold;" text="&lt;&lt; Back"/>
-                <Button onAction="#packageApp" style="-fx-font-weight: bold;" text="Package"/>
+            <HBox alignment="CENTER_RIGHT" spacing="10.0" styleClass="action-bar">
+                <Button onAction="#showStep2" styleClass="secondary-button" text="Back"/>
+                <Button onAction="#packageApp" styleClass="primary-button" text="Package"/>
             </HBox>
         </VBox>
     </StackPane>

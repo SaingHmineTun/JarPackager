@@ -11,227 +11,251 @@
 }
 
 .root {
-    -fx-background-color:#1e1e1e;
+    -fx-background-color: #181a1f;
     -fx-font-family: "Inika";
     -fx-font-size: 13px;
 }
 
-/* 标题样式 */
+.app-root {
+    -fx-background-color: #181a1f;
+}
+
+.vbox {
+    -fx-background-color: #181a1f;
+}
+
+.top-bar {
+    -fx-padding: 2 0 0 0;
+}
+
+.app-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #f7f8fb;
+}
+
+.app-caption {
+    -fx-font-size: 12px;
+    -fx-text-fill: #8f98a8;
+}
+
+.package-picker {
+    -fx-padding: 7 10;
+    -fx-background-color: #22252b;
+    -fx-border-color: #343943;
+    -fx-border-width: 1;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.separator .line {
+    -fx-border-color: #2b3038;
+    -fx-border-width: 1 0 0 0;
+}
+
+.step-pane {
+    -fx-padding: 4 0 0 0;
+}
+
+.step-header {
+    -fx-padding: 0 0 4 0;
+}
+
+.step-pill {
+    -fx-min-width: 28;
+    -fx-pref-width: 28;
+    -fx-min-height: 28;
+    -fx-pref-height: 28;
+    -fx-alignment: center;
+    -fx-background-color: #4cc9a7;
+    -fx-background-radius: 14;
+    -fx-text-fill: #111416;
+    -fx-font-weight: bold;
+}
+
+.section-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #f7f8fb;
+}
+
 .title-label {
     -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-text-fill: #ffffff;
-    -fx-padding: 0 0 10 0;
+    -fx-text-fill: #f7f8fb;
 }
 
-/* TabPane 样式 */
-.tab-pane {
-    -fx-background-color: transparent;
+.form-grid {
+    -fx-padding: 14 0 0 0;
 }
 
-.tab-pane .tab-header-area .tab-header-background {
-    -fx-background-color: transparent;
-}
-
-.tab {
-    -fx-background-color:#2d2d2d;
-    -fx-padding: 8 15 8 15;
-    -fx-background-radius: 5 5 0 0;
-}
-
-.tab:selected {
-    -fx-background-color: #3a7ca5;
-}
-
-.tab-label {
-    -fx-text-fill: #ffffff;
-    -fx-font-weight: bold;
-}
-
-/* TitledPane 样式 */
-.titled-pane {
-    -fx-background-color: transparent;
-}
-
-.titled-pane > .title {
-    -fx-background-color: #3a7ca5;
-    -fx-padding: 5 10 5 10;
-}
-
-.titled-pane > .title > .label {
-    -fx-text-fill: #ffffff;
-    -fx-font-weight: bold;
-}
-
-.titled-pane > .content {
-    -fx-border-color: #3a7ca5;
-    -fx-border-width: 0 1 1 1;
-    -fx-background-color: #2d2d2d;
-}
-
-/* 按钮样式 */
-.button {
-    -fx-background-color: #3a7ca5;
-    -fx-text-fill: #ffffff;
-    -fx-font-weight: bold;
-    -fx-background-radius: 4;
-    -fx-padding: 5 15 5 15;
-}
-
-.button:hover {
-    -fx-background-color: #4a9bc9;
-}
-
-.button:pressed {
-    -fx-background-color: #2a5c7a;
-}
-
-/* 文本框样式 */
-.text-field {
-   -fx-border-color: #5a9cb9;
-    -fx-border-width: 1;
-    -fx-background-color: #3c3c3c;
-    -fx-padding: 5;
-    -fx-background-radius: 4;
-    -fx-text-fill: #ffffff;
-}
-
-.text-field:focused {
-    -fx-border-color: #7ab6d6;
-    -fx-effect: dropshadow(gaussian, rgba(122, 182, 214, 0.5), 5, 0, 0, 0);
-}
-
-/* 标签样式 */
 .label {
-    -fx-text-fill: #e0e0e0;
+    -fx-text-fill: #d8dde7;
+}
+
+.form-label {
+    -fx-text-fill: #aeb7c6;
+    -fx-font-weight: bold;
 }
 
 .label.required {
-    -fx-text-fill: #ff6b6b;
+    -fx-text-fill: #f0c674;
     -fx-font-weight: bold;
 }
 
-/* 下拉框样式 */
-.combo-box {
-    -fx-border-color: #5a9cb9;
--fx-background-color: #3c3c3c;
-    -fx-background-radius: 4;
+.text-field {
+    -fx-min-height: 34;
+    -fx-pref-height: 34;
+    -fx-background-color: #22252b;
+    -fx-background-radius: 5;
+    -fx-border-color: #3a404c;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-padding: 6 9;
+    -fx-text-fill: #f7f8fb;
+    -fx-prompt-text-fill: #6f7887;
 }
 
-.combo-box .cell {
-    -fx-text-fill: #ffffff;
+.text-field:focused {
+    -fx-border-color: #4cc9a7;
+    -fx-effect: dropshadow(gaussian, rgba(76, 201, 167, 0.18), 8, 0, 0, 0);
+}
+
+.combo-box {
+    -fx-min-height: 34;
+    -fx-pref-height: 34;
+    -fx-background-color: #22252b;
+    -fx-background-radius: 5;
+    -fx-border-color: #3a404c;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+}
+
+.combo-box:hover {
+    -fx-border-color: #596171;
+}
+
+.combo-box:focused {
+    -fx-border-color: #4cc9a7;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #f7f8fb;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #22252b;
+    -fx-border-color: #3a404c;
+}
+
+.combo-box-popup .list-cell {
+    -fx-background-color: #22252b;
+    -fx-text-fill: #f7f8fb;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #2f7d6c;
 }
 
 .combo-box .arrow-button {
-    -fx-background-color: #3a7ca5;
+    -fx-background-color: transparent;
 }
 
 .combo-box .arrow {
-    -fx-background-color: #ffffff;
+    -fx-background-color: #aeb7c6;
 }
 
-.combo-box-base:hover {
-    -fx-border-color: #7ab6d6;
+.button {
+    -fx-min-height: 34;
+    -fx-background-color: #252931;
+    -fx-border-color: #3a404c;
+    -fx-border-width: 1;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-padding: 7 14;
+    -fx-font-weight: bold;
+    -fx-text-fill: #e8ecf2;
+    -fx-cursor: hand;
 }
 
-.combo-box-base:focused {
-    -fx-border-color: #7ab6d6;
-    -fx-effect: dropshadow(gaussian, rgba(122, 182, 214, 0.5), 5, 0, 0, 0);
+.button:hover {
+    -fx-background-color: #2d323c;
+    -fx-border-color: #596171;
 }
 
-.combo-box .list-view {
-    -fx-background-color: #3c3c3c;
+.primary-button {
+    -fx-background-color: #4cc9a7;
+    -fx-border-color: #4cc9a7;
+    -fx-text-fill: #111416;
 }
 
-.combo-box .list-view .list-cell {
-    -fx-background-color: #3c3c3c;
-    -fx-text-fill: #ffffff;
+.primary-button:hover {
+    -fx-background-color: #68d8b9;
 }
 
-.combo-box .list-view .list-cell:hover{
-    -fx-background-color: #3a7ca5;
+.primary-button:pressed {
+    -fx-background-color: #34aa8b;
 }
 
-/* 进度条样式 */
-.progress-bar {
-    -fx-accent: #3a7ca5;
+.secondary-button {
+    -fx-background-color: #252931;
+    -fx-border-color: #3a404c;
+    -fx-border-width: 1;
+    -fx-text-fill: #e8ecf2;
 }
 
-.progress-bar .bar {
-    -fx-background-color: #3a7ca5;
-    -fx-background-insets: 0;
-    -fx-background-radius: 3;
+.secondary-button:hover {
+    -fx-background-color: #2d323c;
+    -fx-border-color: #596171;
 }
 
-.progress-bar .track {
-    -fx-background-color: #3c3c3c;
-    -fx-background-insets: 0;
-    -fx-background-radius: 3;
+.secondary-button:pressed {
+    -fx-background-color: #20242b;
 }
 
-/* 文本区域样式 */
-.text-area {
-    -fx-border-color: #5a9cb9;
-    -fx-background-color: #3c3c3c;
-    -fx-background-radius: 4;
-    -fx-text-fill: #ffffff;
+.action-bar {
+    -fx-padding: 8 0 0 0;
 }
 
-.text-area .content {
-    -fx-background-color: #3c3c3c;
-    -fx-text-fill: #ffffff;
-}
-
-.text-area:focused {
-    -fx-border-color: #7ab6d6;
-    -fx-effect: dropshadow(gaussian, rgba(122, 182, 214, 0.5), 5, 0, 0, 0);
-}
-
-/* VBox 样式 */
-.vbox {
-    -fx-spacing: 15;
-}
-
-/* HBox 样式 */
-.hbox {
-    -fx-spacing: 5;
-    -fx-alignment: center-left;
-}
-
-/*复选框样式 */
 .check-box {
-    -fx-text-fill: #e0e0e0;
-    -fx-padding: 5px;
+    -fx-text-fill: #d8dde7;
+    -fx-padding: 3 6 3 0;
 }
 
 .check-box .box {
-    -fx-background-color: #3c3c3c;
-    -fx-border-color: #5a9cb9;
-   -fx-border-width: 2px;
-    -fx-border-radius: 3px;
-    -fx-background-radius: 3px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 3, 0, 1, 1);
+    -fx-background-color: #22252b;
+    -fx-border-color: #4a5260;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
 }
 
 .check-box:hover .box {
-    -fx-background-color: #444444;
-    -fx-border-color: #7ab6d6;
+    -fx-border-color: #4cc9a7;
 }
 
 .check-box:selected .box {
-    -fx-background-color: linear-gradient(to bottom, #3a7ca5, #2a5c7a);
-    -fx-border-color: #2a5c7a;
+    -fx-background-color: #4cc9a7;
+    -fx-border-color: #4cc9a7;
 }
 
 .check-box:selected .mark {
-    -fx-background-color: white;
-    -fx-shape: "M 0 4 L 3 8 L 9 0 L 10 1 L 3 9L -1 5 Z";
+    -fx-background-color: #111416;
 }
 
-.check-box:pressed .box {
-    -fx-background-color: linear-gradient(to bottom, #2a5c7a, #1a4c6a);
+.text-area {
+    -fx-background-color: #22252b;
+    -fx-border-color: #3a404c;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-text-fill: #f7f8fb;
 }
 
-.check-box:disabled {
-    -fx-opacity: 0.5;
+.text-area .content {
+    -fx-background-color: #22252b;
+}
+
+.progress-bar {
+    -fx-accent: #4cc9a7;
 }

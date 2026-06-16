@@ -7,6 +7,7 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
 - **Step-by-Step Wizard Interface**: Intuitive three-step process for easy configuration
 - **JAR Analysis**: Automatically extracts main class and other information from JAR manifest
 - **Multiple Output Formats**: Supports EXE, MSI, and app-image packaging
+- **Installer from App Image**: Build EXE/MSI installers from an existing app-image folder
 - **Dynamic Java Options**: Add multiple Java runtime options with automatic quoting
 - **Icon Support**: Convert PNG/JPG images to ICO format and apply to your application
 - **Windows-Specific Options**: Configure shortcuts, menu entries, per-user installs, support/update URLs, and upgrade capabilities
@@ -23,6 +24,7 @@ Before Step 1, choose the package type (`EXE`, `MSI`, or `app-image`) from the t
 
 #### Step 1: Basic Information
 1. Click "Browse..." next to "Select JAR File" to choose your application JAR file
+   - Or select an Existing App Image folder when you want to build an EXE/MSI from a previously generated app image
 2. The tool will automatically analyze the JAR and populate:
    - Main Class (from JAR manifest)
    - ApplicationName (based on JAR filename)
@@ -119,6 +121,8 @@ jpackage --input target --name JAR-Packager --app-version 1.0 --main-class it.sa
 ```
 
 To create an application image instead of an installer, choose `app-image` in the Package Type field. The tool will run `jpackage --type app-image` and skip installer-only options such as shortcuts, Start menu entries, directory chooser, upgrade UUID, menu group, and license file.
+
+To create an EXE/MSI from an existing app image, choose `exe` or `msi`, select the Existing App Image folder, then package. The tool will run `jpackage --app-image <folder>` and skip JAR, launcher, module, and runtime-image creation options.
 
 ## BuildingNativeExecutable with GraalVM
 

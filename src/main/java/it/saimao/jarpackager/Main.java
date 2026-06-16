@@ -19,9 +19,11 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("stepped-packager-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load());
+        Scene scene = new Scene(fxmlLoader.load(), 760, 640);
         stage.setTitle("JAR Packager Tool");
         stage.getIcons().add(new Image(Main.class.getResourceAsStream("app_icon.png")));
+        stage.setMinWidth(720);
+        stage.setMinHeight(600);
         stage.setScene(scene);
         stage.show();
         

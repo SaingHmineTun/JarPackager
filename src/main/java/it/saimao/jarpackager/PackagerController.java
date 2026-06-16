@@ -35,6 +35,9 @@ public class PackagerController {
     private TextField jarFileField;
 
     @FXML
+    private TextField appImageField;
+
+    @FXML
     private TextField inputDirField;
 
     @FXML
@@ -107,6 +110,9 @@ public class PackagerController {
     private VBox javaOptionsContainer;
 
     @FXML
+    private HBox appImageRow;
+
+    @FXML
     private GridPane windowsInstallerOptionsGrid;
 
     @FXML
@@ -155,6 +161,7 @@ public class PackagerController {
         setManagedAndVisible(winDirChooserCheckBox, !appImageSelected);
         setManagedAndVisible(winPerUserInstallCheckBox, !appImageSelected);
         setManagedAndVisible(winShortcutPromptCheckBox, !appImageSelected);
+        setManagedAndVisible(appImageRow, !appImageSelected);
     }
 
     private void setManagedAndVisible(Node node, boolean visible) {
@@ -176,7 +183,7 @@ public class PackagerController {
     private void showStep2() {
         //验证步骤1中的必填字段
         if (!validateStep1Fields()) {
-            showAlert("Missing Required Fields", "Please fill in all requiredfields (marked with *) before proceeding tothenext step.");
+            showAlert("Missing Required Fields", getRequiredFieldsMessage());
             return;
         }
 
@@ -193,7 +200,15 @@ public class PackagerController {
     }
 
     private boolean validateStep1Fields() {
-        return !jarFileField.getText().isEmpty() && !inputDirField.getText().isEmpty() && !destDirField.getText().isEmpty() && !appNameField.getText().isEmpty() && !mainClassField.getText().isEmpty() && !mainJarField.getText().isEmpty();
+        if (appNameField.getText().isEmpty() || destDirField.getText().isEmpty()) {
+            return false;
+        }
+
+        if (isUsingPrebuiltAppImage()) {
+            return true;
+        }
+
+        return !jarFileField.getText().isEmpty() && !inputDirField.getText().isEmpty() && !mainClassField.getText().isEmpty() && !mainJarField.getText().isEmpty();
     }
 
     @FXML
@@ -339,6 +354,24 @@ public class PackagerController {
     }
 
     @FXML
+    private void browseAppImageDir(ActionEvent event) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Select App Image Directory");
+        File selectedDirectory = directoryChooser.showDialog(appImageField.getScene().getWindow());
+        if (selectedDirectory != null) {
+            appImageField.setText(selectedDirectory.getAbsolutePath());
+
+            if (appNameField.getText().isEmpty()) {
+                appNameField.setText(getAppNameFromAppImageDirectory(selectedDirectory));
+            }
+
+            if (destDirField.getText().isEmpty() && selectedDirectory.getParentFile() != null) {
+                destDirField.setText(selectedDirectory.getParentFile().getAbsolutePath());
+            }
+        }
+    }
+
+    @FXML
     private void browseIcon(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select IconFile");
@@ -409,9 +442,9 @@ public class PackagerController {
     @FXML
     private void packageApp(ActionEvent event) {
         //Validate inputs
-        if (inputDirField.getText().isEmpty() || appNameField.getText().isEmpty() || mainClassField.getText().isEmpty() || mainJarField.getText().isEmpty()) {
+        if (!validateStep1Fields()) {
 
-            showCustomDialog("Missing Required Fields", "Missing Required Fields", "Please fill in all required fields(InputDirectory, Application Name, Main Class, MainJAR)");
+            showCustomDialog("Missing Required Fields", "Missing Required Fields", getRequiredFieldsMessage());
             return;
         }
 
@@ -433,9 +466,12 @@ public class PackagerController {
         String appName = getCommandOptionValue(command, "--name");
         String destDir = getCommandOptionValue(command, "--dest");
         if (destDir.isEmpty()) {
-            destDir = getCommandOptionValue(command, "--input");
+            String inputDir = getCommandOptionValue(command, "--input");
+            String appImageDir = getCommandOptionValue(command, "--app-image");
+            destDir = !inputDir.isEmpty() ? inputDir : getParentDirectoryPath(appImageDir);
         }
         boolean appImageSelected = isAppImageType(packageType);
+        boolean prebuiltAppImageSelected = isCommandUsingPrebuiltAppImage(command);
 
         try {
             //在进度对话框中显示执行的命令
@@ -443,6 +479,8 @@ public class PackagerController {
             Platform.runLater(() -> {
                 if (appImageSelected) {
                     progressController.appendText("Creating an application image. Installer-only options will be ignored.\n\n");
+                } else if (prebuiltAppImageSelected) {
+                    progressController.appendText("Creating an installer from an existing application image. JAR and launcher creation options will be ignored.\n\n");
                 }
                 progressController.appendText("Command: ");
                 progressController.appendText(commandStr + "\n\n");
@@ -503,11 +541,9 @@ public class PackagerController {
         List<String> command = new ArrayList<>();
         String packageType = packageTypeCombo.getValue();
         boolean appImageSelected = isAppImageType(packageType);
+        boolean prebuiltAppImageSelected = isUsingPrebuiltAppImage(packageType);
 
         command.add("jpackage");
-
-        command.add("--input");
-        command.add(inputDirField.getText());
 
         command.add("--name");
         command.add(appNameField.getText());
@@ -517,12 +553,6 @@ public class PackagerController {
             command.add(appVersionField.getText());
         }
 
-        command.add("--main-class");
-        command.add(mainClassField.getText());
-
-        command.add("--main-jar");
-        command.add(mainJarField.getText());
-
         command.add("--type");
         command.add(packageType);
 
@@ -531,7 +561,21 @@ public class PackagerController {
             command.add(destDirField.getText());
         }
 
-        if (!iconField.getText().isEmpty()) {
+        if (prebuiltAppImageSelected) {
+            command.add("--app-image");
+            command.add(appImageField.getText());
+        } else {
+            command.add("--input");
+            command.add(inputDirField.getText());
+
+            command.add("--main-class");
+            command.add(mainClassField.getText());
+
+            command.add("--main-jar");
+            command.add(mainJarField.getText());
+        }
+
+        if (!prebuiltAppImageSelected && !iconField.getText().isEmpty()) {
             String iconPath = iconField.getText();
 
             if (iconPath.contains("(will be converted to ICO)")) {
@@ -570,7 +614,7 @@ public class PackagerController {
             }
         }
 
-        if (winConsoleCheckBox.isSelected()) {
+        if (!prebuiltAppImageSelected && winConsoleCheckBox.isSelected()) {
             command.add("--win-console");
         }
 
@@ -596,26 +640,28 @@ public class PackagerController {
             }
         }
 
-        for (TextField field : javaOptionsFields) {
-            if (!field.getText().isEmpty()) {
-                command.add("--java-options");
-                command.add(field.getText().trim());
+        if (!prebuiltAppImageSelected) {
+            for (TextField field : javaOptionsFields) {
+                if (!field.getText().isEmpty()) {
+                    command.add("--java-options");
+                    command.add(field.getText().trim());
+                }
             }
-        }
 
-        if (!addModulesField.getText().isEmpty()) {
-            command.add("--add-modules");
-            command.add(addModulesField.getText());
-        }
+            if (!addModulesField.getText().isEmpty()) {
+                command.add("--add-modules");
+                command.add(addModulesField.getText());
+            }
 
-        if (!modulePathField.getText().isEmpty()) {
-            command.add("--module-path");
-            command.add(modulePathField.getText());
-        }
+            if (!modulePathField.getText().isEmpty()) {
+                command.add("--module-path");
+                command.add(modulePathField.getText());
+            }
 
-        if (!runtimeImageField.getText().isEmpty()) {
-            command.add("--runtime-image");
-            command.add(runtimeImageField.getText());
+            if (!runtimeImageField.getText().isEmpty()) {
+                command.add("--runtime-image");
+                command.add(runtimeImageField.getText());
+            }
         }
 
         if (!appImageSelected && !licenseField.getText().isEmpty()) {
@@ -672,11 +718,33 @@ public class PackagerController {
         return "";
     }
 
+    private boolean isCommandUsingPrebuiltAppImage(List<String> command) {
+        return !getCommandOptionValue(command, "--app-image").isEmpty();
+    }
+
     private String getExpectedOutputPath(String destDir, String packageType, String appName) {
         if (isAppImageType(packageType)) {
             return destDir + File.separator + getAppImageDirectoryName(appName);
         }
         return destDir + File.separator + appName + "." + packageType;
+    }
+
+    private String getAppNameFromAppImageDirectory(File directory) {
+        String directoryName = directory.getName();
+        if (directoryName.endsWith(".app")) {
+            return directoryName.substring(0, directoryName.length() - 4);
+        }
+        return directoryName;
+    }
+
+    private String getParentDirectoryPath(String path) {
+        if (path == null || path.isEmpty()) {
+            return "";
+        }
+
+        File file = new File(path);
+        File parentFile = file.getParentFile();
+        return parentFile == null ? "" : parentFile.getAbsolutePath();
     }
 
     private String getAppImageDirectoryName(String appName) {
@@ -688,6 +756,21 @@ public class PackagerController {
 
     private boolean isAppImageType(String packageType) {
         return PACKAGE_TYPE_APP_IMAGE.equals(packageType);
+    }
+
+    private boolean isUsingPrebuiltAppImage() {
+        return isUsingPrebuiltAppImage(packageTypeCombo.getValue());
+    }
+
+    private boolean isUsingPrebuiltAppImage(String packageType) {
+        return !isAppImageType(packageType) && !appImageField.getText().isEmpty();
+    }
+
+    private String getRequiredFieldsMessage() {
+        if (isUsingPrebuiltAppImage()) {
+            return "Please fill in Destination Directory, Application Name, and Existing App Image.";
+        }
+        return "Please fill in Destination Directory, Application Name, and the JAR fields (JAR File, Input Directory, Main Class, Main JAR).";
     }
 
     @FXML
@@ -704,6 +787,7 @@ public class PackagerController {
         // Create a remove button
         Button removeButton = new Button("Remove");
         removeButton.getStyleClass().add("button");
+        removeButton.getStyleClass().add("secondary-button");
         removeButton.setOnAction(e -> {
             javaOptionsFields.remove(newJavaOptionField);
             javaOptionsContainers.remove(container);
