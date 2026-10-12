@@ -6,7 +6,7 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
 
 - **Step-by-Step Wizard Interface**: Intuitive three-step process for easy configuration
 - **JAR Analysis**: Automatically extracts main class and other information from JAR manifest
-- **Multiple Output Formats**: Supports EXE, MSI, and app-image packaging
+- **Multiple Output Formats**: Supports EXE/MSI on Windows, DMG/PKG on macOS, and app-image packaging
 - **Installer from App Image**: Build EXE/MSI installers from an existing app-image folder
 - **Dynamic Java Options**: Add multiple Java runtime options with automatic quoting
 - **Icon Support**: Convert PNG/JPG images to ICO format and apply to your application
@@ -15,12 +15,12 @@ A JavaFX desktop application that simplifies the process of packaging JAR files 
 
 ## Prerequisites
 
-- Java Development Kit (JDK) 14 or higher
+- JDK 25 or higher to build/run this application; a full JDK with `jpackage` for packaging
 - `jpackage` tool (included in JDK 14+)
 
 ### Step-by-Step Guide
 
-Before Step 1, choose the package type (`EXE`, `MSI`, or `app-image`) from the top-level Package Type selector.
+Before Step 1, choose the package type (`exe`/`msi` on Windows, `dmg`/`pkg` on macOS, or `app-image`) from the top-level Package Type selector.
 
 #### Step 1: Basic Information
 1. For EXE/MSI output, choose the source:
@@ -191,3 +191,52 @@ This is a JavaFX internal warning that can be resolved by adding the JVM argumen
 
 - Built with JavaFX
 - Uses the `jpackage` tool included in JDK 14+
+
+
+## macOS packaging and JDK selection
+
+Build `.dmg` and `.pkg` on macOS; jpackage does not cross-compile installers.
+Choose either format in Output, then package from a JAR or an existing `.app`
+image. Use an `.icns` icon on macOS (ICO conversion is Windows-only).
+Windows installer settings are hidden and omitted on macOS.
+Installers are unsigned unless signing is configured separately.
+
+The app automatically discovers the installed JDK using `JAVA_HOME`, the running
+JVM, resolved Java executables on PATH, and standard installation folders. There
+is no manual JDK selector. Check and packaging use tools from the same JDK home,
+so Oracle's limited Windows `javapath` shortcuts do not prevent direct invocation
+of `jpackage`. JavaFX is supplied by Maven; a JavaFX-bundled JDK is not required.
+
+## Environment check
+
+Click **Check** to inspect your packaging toolkit. Green rows mean the tool ran
+successfully; red rows explain what needs setup. Click a row to see details, and
+click a red row for installation steps and a link to the official installation
+page. After installing tools or changing environment variables, restart the app
+and check again. The Check button also turns green/red to summarize the result.
+
+- All platforms: checks Java, the JDK compiler, jpackage, and jlink from the same JDK.
+- Windows: checks WiX for EXE/MSI output. WiX 3 requires both candle and light;
+  modern WiX requires JDK 24 or newer. Standard WiX and global .NET tool folders
+  are discovered and shared with the packaging subprocess.
+- macOS: checks hdiutil, pkgbuild, productbuild, and Xcode Command Line Tools
+  (including SetFile). Xcode tools enable custom DMG icons and signing setup.
+  Plain unsigned packages may still work without Xcode tools. Signing certificates
+  are separate and signing is not configured by this app.
+
+The check covers tool availability, not whether a particular JAR, icon, or
+installer configuration is valid. Missing WiX does not prevent app-image output.
+
+## Interface and destination
+
+The three-step workspace separates application details, identity/runtime, and
+build options. Navigation and build buttons stay visible while forms scroll.
+The destination starts at `<working-directory>/dist` and follows the source
+folder: selecting a JAR in `/home/example` defaults to `/home/example/dist`.
+For an existing app image, it defaults to a `dist` folder beside that image.
+A destination you enter or browse to explicitly is preserved when changing the
+source. The output folder is created during packaging; it need not exist yet.
+
+Prerequisite references: [Oracle packaging overview](https://docs.oracle.com/en/java/javase/25/jpackage/packaging-overview.html),
+[WiX installation](https://wixtoolset.org/docs/intro/), and
+[Apple Command Line Tools](https://developer.apple.com/documentation/xcode/installing-the-command-line-tools/).

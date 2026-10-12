@@ -19,16 +19,17 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("stepped-packager-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 760, 640);
+        Scene scene = new Scene(fxmlLoader.load(), 1040, 820);
         stage.setTitle("JAR Packager Tool");
         stage.getIcons().add(new Image(Main.class.getResourceAsStream("app_icon.png")));
-        stage.setMinWidth(720);
-        stage.setMinHeight(600);
+        stage.setMinWidth(920);
+        stage.setMinHeight(740);
         stage.setScene(scene);
         stage.show();
         
         // 将primaryStage传递给控制器
         PackagerController controller = fxmlLoader.getController();
         controller.setPrimaryStage(stage);
+        controller.setOpenLink(getHostServices()::showDocument);
     }
 }

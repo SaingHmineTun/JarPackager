@@ -33,6 +33,21 @@ public class PackagerController {
     private static final String PACKAGE_TYPE_MSI = "msi";
     private static final String PACKAGE_TYPE_APP_IMAGE = "app-image";
 
+    @FXML private Button checkButton;
+    @FXML private javafx.scene.control.Label checkSummary;
+    @FXML private Button applicationNav;
+    @FXML private Button runtimeNav;
+    @FXML private Button optionsNav;
+    @FXML private Button backButton;
+    @FXML private Button continueButton;
+    @FXML private Button buildButton;
+    private int currentStep = 1;
+    private String automaticDestination;
+    private java.util.function.Consumer<String> openLink = url -> {};
+
+    public void setOpenLink(java.util.function.Consumer<String> openLink) { this.openLink = openLink; }
+    @FXML private Node windowsOptionsPane;
+
     @FXML
     private TextField jarFileField;
 
@@ -189,7 +204,11 @@ public class PackagerController {
     private final List<TextField> javaOptionsFields = new ArrayList<>();
     private final List<HBox> javaOptionsContainers = new ArrayList<>();
 
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor(task -> {
+        Thread thread = new Thread(task, "packager-worker");
+        thread.setDaemon(true);
+        return thread;
+    });
     private Stage primaryStage;
 
     public void setPrimaryStage(Stage primaryStage) {
@@ -198,8 +217,10 @@ public class PackagerController {
 
     @FXML
     public void initialize() {
-        packageTypeCombo.getItems().addAll(PACKAGE_TYPE_EXE, PACKAGE_TYPE_MSI, PACKAGE_TYPE_APP_IMAGE);
-        packageTypeCombo.setValue(PACKAGE_TYPE_EXE);
+        packageTypeCombo.getItems().addAll(JdkLocator.isMac() ? List.of("dmg", "pkg", PACKAGE_TYPE_APP_IMAGE)
+                : JdkLocator.isWindows() ? List.of(PACKAGE_TYPE_EXE, PACKAGE_TYPE_MSI, PACKAGE_TYPE_APP_IMAGE)
+                : List.of(PACKAGE_TYPE_APP_IMAGE));
+        packageTypeCombo.setValue(packageTypeCombo.getItems().getFirst());
         packageTypeCombo.valueProperty().addListener((observable, oldValue, newValue) -> updatePackageTypeOptions());
 
         ToggleGroup sourceToggleGroup = new ToggleGroup();
@@ -207,8 +228,20 @@ public class PackagerController {
         fromAppImageRadioButton.setToggleGroup(sourceToggleGroup);
         sourceToggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> updateSourceModeOptions());
 
+        automaticDestination = destinationFor(System.getProperty("user.dir"));
+        destDirField.setText(automaticDestination);
+        inputDirField.textProperty().addListener((obs, oldValue, newValue) -> {
+            if (!newValue.isBlank() && isJarSourceSelected()) updateDefaultDestination(newValue);
+        });
+        appImageField.textProperty().addListener((obs, oldValue, newValue) -> {
+            if (!newValue.isBlank() && isImageSourceSelected()) {
+                String parent = getParentDirectoryPath(newValue);
+                if (!parent.isBlank()) updateDefaultDestination(parent);
+            }
+        });
         javaOptionsFields.add(javaOptionsField);
         updatePackageTypeOptions();
+        activateStep(1);
     }
 
     private void updatePackageTypeOptions() {
@@ -219,7 +252,8 @@ public class PackagerController {
         }
 
         setManagedAndVisible(sourceModeRow, !appImageSelected);
-        setManagedAndVisible(windowsInstallerOptionsGrid, !appImageSelected);
+        setManagedAndVisible(windowsInstallerOptionsGrid, JdkLocator.isWindows() && !appImageSelected);
+        setManagedAndVisible(windowsOptionsPane, JdkLocator.isWindows());
         setManagedAndVisible(winShortcutCheckBox, !appImageSelected);
         setManagedAndVisible(winMenuCheckBox, !appImageSelected);
         setManagedAndVisible(winDirChooserCheckBox, !appImageSelected);
@@ -252,7 +286,13 @@ public class PackagerController {
         setManagedAndVisible(runtimeImageRow, jarSourceSelected);
         setManagedAndVisible(javaOptionsLabel, jarSourceSelected);
         setManagedAndVisible(javaOptionsContainer, jarSourceSelected);
-        setManagedAndVisible(winConsoleCheckBox, jarSourceSelected);
+        setManagedAndVisible(winConsoleCheckBox, JdkLocator.isWindows() && jarSourceSelected);
+        if (jarSourceSelected && !inputDirField.getText().isBlank()) {
+            updateDefaultDestination(inputDirField.getText());
+        } else if (imageSourceSelected && !appImageField.getText().isBlank()) {
+            String parent = getParentDirectoryPath(appImageField.getText());
+            if (!parent.isBlank()) updateDefaultDestination(parent);
+        }
     }
 
     private void setManagedAndVisible(Node node, boolean visible) {
@@ -265,9 +305,7 @@ public class PackagerController {
     //步骤导航方法
     @FXML
     private void showStep1() {
-        step1.setVisible(true);
-        step2.setVisible(false);
-        step3.setVisible(false);
+        activateStep(1);
     }
 
     @FXML
@@ -278,16 +316,16 @@ public class PackagerController {
             return;
         }
 
-        step1.setVisible(false);
-        step2.setVisible(true);
-        step3.setVisible(false);
+        activateStep(2);
     }
 
     @FXML
     private void showStep3() {
-        step1.setVisible(false);
-        step2.setVisible(false);
-        step3.setVisible(true);
+        if (!validateStep1Fields()) {
+            showAlert("Missing Required Fields", getRequiredFieldsMessage());
+            return;
+        }
+        activateStep(3);
     }
 
     private boolean validateStep1Fields() {
@@ -302,34 +340,109 @@ public class PackagerController {
         return !jarFileField.getText().isEmpty() && !inputDirField.getText().isEmpty() && !mainClassField.getText().isEmpty() && !mainJarField.getText().isEmpty();
     }
 
+    @FXML private void nextStep() { if (currentStep == 1) showStep2(); else showStep3(); }
+    @FXML private void previousStep() { activateStep(Math.max(1, currentStep - 1)); }
+
+    private void activateStep(int step) {
+        currentStep = step;
+        setManagedAndVisible(backButton, step > 1);
+        setManagedAndVisible(continueButton, step < 3);
+        setManagedAndVisible(buildButton, step == 3);
+        List<VBox> panes = List.of(step1, step2, step3);
+        List<Button> navigation = List.of(applicationNav, runtimeNav, optionsNav);
+        for (int i = 0; i < panes.size(); i++) {
+            setManagedAndVisible(panes.get(i), i == step - 1);
+            navigation.get(i).getStyleClass().remove("nav-active");
+            if (i == step - 1) navigation.get(i).getStyleClass().add("nav-active");
+        }
+    }
+
+    static String destinationFor(String folder) {
+        return java.nio.file.Path.of(folder).toAbsolutePath().normalize().resolve("dist").toString();
+    }
+
+    private void updateDefaultDestination(String folder) {
+        try {
+            String next = destinationFor(folder);
+            if (destDirField.getText().isBlank() || destDirField.getText().equals(automaticDestination)) {
+                destDirField.setText(next);
+            }
+            automaticDestination = next;
+        } catch (java.nio.file.InvalidPathException ignored) { }
+    }
+
     @FXML
-    private void checkJdkInfo(ActionEvent event) {
+    private void checkEnvironment(ActionEvent event) {
+        checkButton.setDisable(true);
+        checkButton.setText("Checking…");
+        checkSummary.setText("Checking installed tools…");
+        checkButton.getStyleClass().removeAll("check-ready", "check-missing");
         executorService.submit(() -> {
             try {
-                ProcessBuilder processBuilder = new ProcessBuilder("java", "-version");
-                processBuilder.redirectErrorStream(true);
-                Process process = processBuilder.start();
-
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                StringBuilder versionInfo = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    versionInfo.append(line).append("\n");
-                }
-
-                int exitCode = process.waitFor();
-                if (exitCode == 0) {
-                    Platform.runLater(() -> showCustomDialog("JDK Information", "Installed JDK Information", versionInfo.toString()));
-                } else {
-                    Platform.runLater(() -> showCustomDialog("Error", "Failed to get JDK information", "Error code: " + exitCode));
-                }
-            } catch (Exception e) {
-                Platform.runLater(() -> showCustomDialog("Error", "Failed to execute java -version", e.getMessage()));
+                List<ToolCheckService.Result> results = ToolCheckService.check();
+                Platform.runLater(() -> {
+                    boolean ready = results.stream().allMatch(ToolCheckService.Result::ready);
+                    checkButton.setDisable(false);
+                    checkButton.setText("Check");
+                    checkButton.getStyleClass().add(ready ? "check-ready" : "check-missing");
+                    checkSummary.setText(ready ? "All tools ready" : "Setup needs attention");
+                    showToolResults(results);
+                });
+            } catch (RuntimeException e) {
+                Platform.runLater(() -> {
+                    checkButton.setDisable(false);
+                    checkButton.setText("Check");
+                    checkButton.getStyleClass().add("check-missing");
+                    checkSummary.setText("Could not complete check");
+                    showAlert("Check failed", "Could not inspect installed tools. " + e.getMessage());
+                });
             }
         });
     }
 
+    private void showToolResults(List<ToolCheckService.Result> results) {
+        javafx.scene.control.Label title = new javafx.scene.control.Label("Your packaging toolkit");
+        title.getStyleClass().add("section-title");
+        javafx.scene.control.Label description = new javafx.scene.control.Label(
+                "Green means ready. Select a red tool for installation steps. Checks cover tool availability; your application is validated when packaging.");
+        description.setWrapText(true);
+        description.getStyleClass().add("muted");
+        VBox rows = new VBox(10);
+        for (ToolCheckService.Result result : results) {
+            Button row = new Button((result.ready() ? "✓   " : "!   ") + result.name() + "    ·    " + (result.ready() ? "Ready" : "Needs setup")
+                    + "\n" + result.scope());
+            row.setMaxWidth(Double.MAX_VALUE);
+            row.setWrapText(true);
+            row.getStyleClass().addAll("tool-row", result.ready() ? "tool-ready" : "tool-missing");
+            row.setOnAction(e -> showCustomDialog(result.name(), result.name() + (result.ready() ? " is ready" : " needs setup"),
+                    (result.ready() ? "Detected tool:\n" : result.help() + "\n\nCheck details:\n") + result.detail(), result.url()));
+            rows.getChildren().add(row);
+        }
+        javafx.scene.control.ScrollPane scroll = new javafx.scene.control.ScrollPane(rows);
+        scroll.setFitToWidth(true);
+        scroll.setPrefViewportHeight(Math.min(440, results.size() * 77));
+        Button done = new Button("Done");
+        done.getStyleClass().add("primary-button");
+        HBox actions = new HBox(done);
+        actions.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+        VBox content = new VBox(16, title, description, scroll, actions);
+        content.getStyleClass().add("dialog-root");
+        Stage dialog = new Stage();
+        dialog.initOwner(primaryStage);
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.setTitle("Environment check");
+        javafx.scene.Scene scene = new javafx.scene.Scene(content, 580, Math.min(690, 210 + results.size() * 77));
+        scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
+        dialog.setScene(scene);
+        done.setOnAction(e -> dialog.close());
+        dialog.show();
+    }
+
     private void showCustomDialog(String title, String header, String content) {
+        showCustomDialog(title, header, content, null);
+    }
+
+    private void showCustomDialog(String title, String header, String content, String url) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("custom-dialog.fxml"));
             VBox dialogRoot = loader.load();
@@ -340,6 +453,7 @@ public class PackagerController {
             controller.setDialogStage(dialogStage);
             controller.setTitle(header);
             controller.setContent(content);
+            controller.setHelpLink(url, openLink);
 
             dialogStage.setTitle(title);
             dialogStage.initModality(Modality.WINDOW_MODAL);
@@ -350,7 +464,7 @@ public class PackagerController {
             dialogStage.showAndWait();
         } catch (Exception e) {
             e.printStackTrace();
-            showAlert(title, content);
+            new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR, content).showAndWait();
         }
     }
 
@@ -407,13 +521,12 @@ public class PackagerController {
                 appNameField.setText(jarFile.getName().substring(0, jarFile.getName().lastIndexOf(".jar")));
 
                 // Set main jar file name
-                mainJarField.setText(jarFile.getAbsolutePath());
+                mainJarField.setText(jarFile.getName());
 
                 // Set input directory
                 inputDirField.setText(jarFile.getParent());
 
-                // Set destinationdirectory to same as input by default
-                destDirField.setText(jarFile.getParent());
+                updateDefaultDestination(jarFile.getParent());
             });
 
             jar.close();
@@ -459,8 +572,8 @@ public class PackagerController {
                 appNameField.setText(getAppNameFromAppImageDirectory(selectedDirectory));
             }
 
-            if (destDirField.getText().isEmpty() && selectedDirectory.getParentFile() != null) {
-                destDirField.setText(selectedDirectory.getParentFile().getAbsolutePath());
+            if (selectedDirectory.getParentFile() != null) {
+                updateDefaultDestination(selectedDirectory.getParentFile().getAbsolutePath());
             }
         }
     }
@@ -469,15 +582,18 @@ public class PackagerController {
     private void browseIcon(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select IconFile");
-        fileChooser.setInitialDirectory(new File(inputDirField.getText()));
+        if (new File(inputDirField.getText()).isDirectory()) fileChooser.setInitialDirectory(new File(inputDirField.getText()));
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Icon Files", "*.ico", "*.png", "*.jpg", "*.jpeg"), new FileChooser.ExtensionFilter("ICO Files", "*.ico"), new FileChooser.ExtensionFilter("PNG Files", "*.png"), new FileChooser.ExtensionFilter("JPG Files", "*.jpg", "*.jpeg"));
+        if (!JdkLocator.isWindows()) {
+            fileChooser.getExtensionFilters().setAll(new FileChooser.ExtensionFilter("Application icon", JdkLocator.isMac() ? "*.icns" : "*.png"));
+        }
         File selectedFile = fileChooser.showOpenDialog(iconField.getScene().getWindow());
         if (selectedFile != null) {
             String filePath = selectedFile.getAbsolutePath();
             String extension = getFileExtension(filePath).toLowerCase();
 
             // 如果不是ico文件，需要转换
-            if (!extension.equals(".ico")) {
+            if (JdkLocator.isWindows() && !extension.equals(".ico")) {
                 iconField.setText(filePath + "(will be converted to ICO)");
                 try {
                     IcoConverter.convertToIco(filePath, filePath + ".ico");
@@ -503,7 +619,7 @@ public class PackagerController {
     @FXML
     private void browseLicense(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(new File(inputDirField.getText()));
+        if (new File(inputDirField.getText()).isDirectory()) fileChooser.setInitialDirectory(new File(inputDirField.getText()));
         fileChooser.setTitle("Select License File");
         File selectedFile = fileChooser.showOpenDialog(licenseField.getScene().getWindow());
         if (selectedFile != null) {
@@ -543,10 +659,11 @@ public class PackagerController {
         }
 
         // 在后台线程中执行打包命令
-        executorService.submit(this::executePackagingTask);
+        List<String> command = buildJPackageCommand();
+        executorService.submit(() -> executePackagingTask(command));
     }
 
-    private void executePackagingTask() {
+    private void executePackagingTask(List<String> command) {
 //创建并显示进度对话框
         ProgressController progressController = new ProgressController();
         Platform.runLater(() -> {
@@ -555,7 +672,6 @@ public class PackagerController {
         });
 
         //Buildj package command
-        List<String> command = buildJPackageCommand();
         String packageType = getCommandOptionValue(command, "--type");
         String appName = getCommandOptionValue(command, "--name");
         String destDir = getCommandOptionValue(command, "--dest");
@@ -568,6 +684,7 @@ public class PackagerController {
         boolean prebuiltAppImageSelected = isCommandUsingPrebuiltAppImage(command);
 
         try {
+            command.set(0, JdkLocator.resolve().toString());
             //在进度对话框中显示执行的命令
             String commandStr = formatCommandForDisplay(command);
             Platform.runLater(() -> {
@@ -581,6 +698,7 @@ public class PackagerController {
             });
 
             ProcessBuilder processBuilder = new ProcessBuilder(command);
+            ToolCheckService.configurePackagingEnvironment(processBuilder);
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
 
@@ -593,8 +711,8 @@ public class PackagerController {
 
             int exitCode = process.waitFor();
             if (exitCode == 0) {
-                String outputPath = getExpectedOutputPath(destDir, packageType, appName);
-                String outputType = appImageSelected ? "image" : "file";
+                String outputPath = appImageSelected ? getExpectedOutputPath(destDir, packageType, appName) : destDir;
+                String outputType = appImageSelected ? "image" : "directory";
 
                 Platform.runLater(() -> {
                     progressController.appendText("\nPackaging completed successfully!\n");
@@ -608,7 +726,7 @@ public class PackagerController {
                     // 添加更多错误信息
                     progressController.appendText("Please check the above output for more details about the error.\n");
                     progressController.appendText("Common issuesand solutions:\n");
-                    progressController.appendText("1. Makesure thejpackage tool is installedand in your PATH\n");
+                    progressController.appendText("1. Use Check to verify the installed packaging tools\n");
                     progressController.appendText("2. Check that all filepaths arecorrect and accessible\n");
                     progressController.appendText("3. Ensure the main JAR file contains a proper manifest withMain-Classentry\n");
                     progressController.appendText("4. Verifythat theinput directory contains all necessaryfiles\n");
@@ -616,7 +734,8 @@ public class PackagerController {
                     showCustomDialog("Packaging Failed", "Packaging Failed", "Packaging failed with exit code: " + exitCode + ". Please check the progress dialog formore details.");
                 });
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | RuntimeException e) {
+            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
@@ -678,7 +797,7 @@ public class PackagerController {
 
             String extension = getFileExtension(iconPath).toLowerCase();
 
-            if (!extension.equals(".ico")) {
+            if (JdkLocator.isWindows() && !extension.equals(".ico")) {
                 showCustomDialog("Icon Conversion", "Icon Conversion Needed", "The selected icon isnot in ICOformat. You need to convert it to ICOformat manually or implement automatic conversion.");
             }
 
@@ -686,7 +805,7 @@ public class PackagerController {
             command.add(iconPath);
         }
 
-        if (!appImageSelected) {
+        if (JdkLocator.isWindows() && !appImageSelected) {
             if (winShortcutCheckBox.isSelected()) {
                 command.add("--win-shortcut");
             }
@@ -708,11 +827,11 @@ public class PackagerController {
             }
         }
 
-        if (!prebuiltAppImageSelected && winConsoleCheckBox.isSelected()) {
+        if (JdkLocator.isWindows() && !prebuiltAppImageSelected && winConsoleCheckBox.isSelected()) {
             command.add("--win-console");
         }
 
-        if (!appImageSelected) {
+        if (JdkLocator.isWindows() && !appImageSelected) {
             if (!upgradeUuidField.getText().isEmpty()) {
                 command.add("--win-upgrade-uuid");
                 command.add(upgradeUuidField.getText());

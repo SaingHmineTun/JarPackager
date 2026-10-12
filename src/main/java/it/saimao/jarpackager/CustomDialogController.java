@@ -17,6 +17,18 @@ public class CustomDialogController {
     @FXML
     private Button okButton;
 
+    @FXML private javafx.scene.control.Hyperlink helpLink;
+
+    public void setHelpLink(String url, java.util.function.Consumer<String> openLink) {
+        boolean visible = url != null && !url.isBlank();
+        helpLink.setVisible(visible);
+        helpLink.setManaged(visible);
+        if (visible) {
+            helpLink.setText("Open official installation guide ↗");
+            helpLink.setOnAction(event -> openLink.accept(url));
+        }
+    }
+
     private Stage dialogStage;
 
     public void setDialogStage(Stage dialogStage) {

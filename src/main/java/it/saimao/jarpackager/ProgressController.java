@@ -44,7 +44,7 @@ public class ProgressController {
         // 加载CSS样式
         try {
             Scene scene = new Scene(vbox, 500, 500);
-            scene.getStylesheets().add(getClass().getResource("dialog.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
             dialog.setScene(scene);
         } catch (Exception e) {
             // 如果加载CSS失败，使用内联样式作为备选
