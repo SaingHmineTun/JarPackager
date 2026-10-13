@@ -34,6 +34,29 @@ public class PackagerController {
     private static final String PACKAGE_TYPE_APP_IMAGE = "app-image";
 
     @FXML private Button checkButton;
+    @FXML private VBox modulesSection;
+    @FXML private Button detectModulesButton;
+    @FXML private Button moduleDetailsButton;
+    @FXML private javafx.scene.control.Label modulesHint;
+    private final javafx.animation.PauseTransition moduleDebounce = new javafx.animation.PauseTransition(javafx.util.Duration.millis(650));
+    private final ExecutorService moduleExecutor = Executors.newSingleThreadExecutor(task -> {
+        Thread thread = new Thread(task, "module-detector");
+        thread.setDaemon(true);
+        return thread;
+    });
+    private java.util.concurrent.Future<?> moduleTask;
+    private long moduleGeneration;
+    private List<String> detectedModules = List.of();
+    private String moduleDetails = "";
+    private boolean moduleAnalysisBusy;
+    private boolean iconConversionBusy;
+    @FXML private Button convertIconButton;
+    @FXML private Button browseIconButton;
+    @FXML private javafx.scene.control.Label iconHint;
+    @FXML private javafx.scene.control.Label summaryName;
+    @FXML private javafx.scene.control.Label summaryFormat;
+    @FXML private javafx.scene.control.Label summaryDestination;
+    @FXML private VBox iconSection;
     @FXML private javafx.scene.control.Label checkSummary;
     @FXML private Button applicationNav;
     @FXML private Button runtimeNav;
@@ -228,6 +251,13 @@ public class PackagerController {
         fromAppImageRadioButton.setToggleGroup(sourceToggleGroup);
         sourceToggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> updateSourceModeOptions());
 
+        iconHint.setText(JdkLocator.isMac() ? "PNG → ICNS, automatically. Original PNG removed after conversion."
+                : JdkLocator.isWindows() ? "PNG / JPG → ICO. Original PNG removed after conversion." : "Choose a PNG icon.");
+        setManagedAndVisible(convertIconButton, JdkLocator.isMac() || JdkLocator.isWindows());
+        summaryName.textProperty().bind(javafx.beans.binding.Bindings.createStringBinding(
+                () -> appNameField.getText().isBlank() ? "Your application" : appNameField.getText(), appNameField.textProperty()));
+        summaryFormat.textProperty().bind(packageTypeCombo.valueProperty());
+        summaryDestination.textProperty().bind(destDirField.textProperty());
         automaticDestination = destinationFor(System.getProperty("user.dir"));
         destDirField.setText(automaticDestination);
         inputDirField.textProperty().addListener((obs, oldValue, newValue) -> {
@@ -239,6 +269,10 @@ public class PackagerController {
                 if (!parent.isBlank()) updateDefaultDestination(parent);
             }
         });
+        moduleDebounce.setOnFinished(event -> detectModules(null));
+        for (TextField field : List.of(jarFileField, mainJarField, inputDirField, modulePathField, runtimeImageField, destDirField)) {
+            field.textProperty().addListener((obs, before, after) -> scheduleModuleDetection());
+        }
         javaOptionsFields.add(javaOptionsField);
         updatePackageTypeOptions();
         activateStep(1);
@@ -276,8 +310,10 @@ public class PackagerController {
         setManagedAndVisible(mainJarLabel, jarSourceSelected);
         setManagedAndVisible(mainJarField, jarSourceSelected);
 
+        setManagedAndVisible(iconSection, jarSourceSelected);
         setManagedAndVisible(iconLabel, jarSourceSelected);
         setManagedAndVisible(iconRow, jarSourceSelected);
+        setManagedAndVisible(modulesSection, jarSourceSelected);
         setManagedAndVisible(addModulesLabel, jarSourceSelected);
         setManagedAndVisible(addModulesField, jarSourceSelected);
         setManagedAndVisible(modulePathLabel, jarSourceSelected);
@@ -293,6 +329,7 @@ public class PackagerController {
             String parent = getParentDirectoryPath(appImageField.getText());
             if (!parent.isBlank()) updateDefaultDestination(parent);
         }
+        scheduleModuleDetection();
     }
 
     private void setManagedAndVisible(Node node, boolean visible) {
@@ -512,7 +549,7 @@ public class PackagerController {
 
             //Update UIonJavaFXApplication Thread
             Platform.runLater(() -> {
-
+                if (!jarFileField.getText().equals(jarFile.getAbsolutePath())) return;
                 if (finalMainClass != null && !finalMainClass.isEmpty()) {
                     mainClassField.setText(finalMainClass);
                 }
@@ -580,32 +617,148 @@ public class PackagerController {
 
     @FXML
     private void browseIcon(ActionEvent event) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select IconFile");
-        if (new File(inputDirField.getText()).isDirectory()) fileChooser.setInitialDirectory(new File(inputDirField.getText()));
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Icon Files", "*.ico", "*.png", "*.jpg", "*.jpeg"), new FileChooser.ExtensionFilter("ICO Files", "*.ico"), new FileChooser.ExtensionFilter("PNG Files", "*.png"), new FileChooser.ExtensionFilter("JPG Files", "*.jpg", "*.jpeg"));
-        if (!JdkLocator.isWindows()) {
-            fileChooser.getExtensionFilters().setAll(new FileChooser.ExtensionFilter("Application icon", JdkLocator.isMac() ? "*.icns" : "*.png"));
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Choose an application icon");
+        if (new File(inputDirField.getText()).isDirectory()) chooser.setInitialDirectory(new File(inputDirField.getText()));
+        chooser.getExtensionFilters().add(JdkLocator.isMac()
+                ? new FileChooser.ExtensionFilter("PNG images & macOS icons", "*.png", "*.PNG", "*.icns")
+                : JdkLocator.isWindows() ? new FileChooser.ExtensionFilter("Images & Windows icons", "*.png", "*.PNG", "*.jpg", "*.jpeg", "*.ico")
+                : new FileChooser.ExtensionFilter("PNG images", "*.png", "*.PNG"));
+        File selected = chooser.showOpenDialog(iconField.getScene().getWindow());
+        if (selected != null) {
+            iconField.setText(selected.getAbsolutePath());
+            if (IconConversionService.needsConversion(selected.toPath())) convertIcon(null);
         }
-        File selectedFile = fileChooser.showOpenDialog(iconField.getScene().getWindow());
-        if (selectedFile != null) {
-            String filePath = selectedFile.getAbsolutePath();
-            String extension = getFileExtension(filePath).toLowerCase();
+    }
 
-            // 如果不是ico文件，需要转换
-            if (JdkLocator.isWindows() && !extension.equals(".ico")) {
-                iconField.setText(filePath + "(will be converted to ICO)");
-                try {
-                    IcoConverter.convertToIco(filePath, filePath + ".ico");
-                    iconField.setText(filePath + ".ico");
-                } catch (IOException e) {
-                    showCustomDialog("Conversion Error", "Error converting toICO", "Try other file or use ico directly");
-                }
-
-            } else {
-                iconField.setText(filePath);
+    @FXML
+    private void convertIcon(ActionEvent event) {
+        java.nio.file.Path source;
+        try {
+            source = java.nio.file.Path.of(iconField.getText());
+            if (iconField.getText().isBlank() || !IconConversionService.needsConversion(source)) {
+                showAlert("Choose an image", JdkLocator.isMac() ? "Choose a PNG file to convert to ICNS." : "Choose a PNG or JPG file to convert to ICO.");
+                return;
             }
+        } catch (java.nio.file.InvalidPathException e) { showAlert("Invalid icon path", e.getMessage()); return; }
+        setIconConverting(true);
+        executorService.submit(() -> {
+            try {
+                var result = IconConversionService.convert(source);
+                Platform.runLater(() -> {
+                    iconField.setText(result.icon().toString());
+                    iconHint.setText(result.note());
+                    setIconConverting(false);
+                });
+            } catch (IOException | RuntimeException e) {
+                Platform.runLater(() -> {
+                    setIconConverting(false);
+                    iconHint.setText("Conversion failed. Your original image was kept.");
+                    showAlert("Icon conversion failed", e.getMessage());
+                });
+            }
+        });
+    }
+
+    private void setIconConverting(boolean busy) {
+        iconConversionBusy = busy;
+        iconField.setDisable(busy);
+        browseIconButton.setDisable(busy);
+        convertIconButton.setDisable(busy);
+        updateBuildAvailability();
+        convertIconButton.setText(busy ? "Converting…" : "Convert");
+        if (busy) iconHint.setText("Creating your native icon…");
+    }
+
+    private void updateBuildAvailability() {
+        buildButton.setDisable(iconConversionBusy || moduleAnalysisBusy);
+    }
+
+    private void scheduleModuleDetection() {
+        moduleDebounce.stop();
+        moduleGeneration++;
+        if (moduleTask != null) moduleTask.cancel(true);
+        addModulesField.setText(ModuleDetector.merge(addModulesField.getText(), detectedModules, List.of()));
+        detectedModules = List.of();
+        moduleDetails = "";
+        setManagedAndVisible(moduleDetailsButton, false);
+        moduleAnalysisBusy = false;
+        detectModulesButton.setDisable(!isJarSourceSelected() || !runtimeImageField.getText().isBlank());
+        detectModulesButton.setText("Detect");
+        if (!isJarSourceSelected() || !runtimeImageField.getText().isBlank()) {
+            modulesHint.setText("An existing image supplies its own runtime; module detection is not needed.");
+        } else if (jarFileField.getText().isBlank()) {
+            modulesHint.setText("Modules are detected automatically after you choose a JAR.");
+        } else {
+            modulesHint.setText("Waiting to analyze dependencies…");
+            moduleAnalysisBusy = true;
+            moduleDebounce.playFromStart();
         }
+        updateBuildAvailability();
+    }
+
+    @FXML
+    private void detectModules(ActionEvent event) {
+        moduleDebounce.stop();
+        long generation = ++moduleGeneration;
+        if (moduleTask != null) moduleTask.cancel(true);
+        if (!isJarSourceSelected() || !runtimeImageField.getText().isBlank()) {
+            scheduleModuleDetection();
+            return;
+        }
+        ModuleDetector.Request request;
+        try {
+            if (jarFileField.getText().isBlank()) throw new IllegalArgumentException("Choose a JAR first.");
+            java.nio.file.Path jar = java.nio.file.Path.of(jarFileField.getText()).toAbsolutePath();
+            java.nio.file.Path input = inputDirField.getText().isBlank() ? jar.getParent() : java.nio.file.Path.of(inputDirField.getText()).toAbsolutePath();
+            if (!mainJarField.getText().isBlank()) jar = input.resolve(mainJarField.getText()).normalize();
+            request = new ModuleDetector.Request(jar, input, modulePathField.getText(),
+                    destDirField.getText().isBlank() ? null : java.nio.file.Path.of(destDirField.getText()));
+        } catch (IllegalArgumentException e) {
+            finishModuleDetection(generation, null, e.getMessage(), addModulesField.getText());
+            return;
+        }
+        String originalModules = addModulesField.getText();
+        moduleAnalysisBusy = true;
+        detectModulesButton.setDisable(true);
+        detectModulesButton.setText("Detecting…");
+        modulesHint.setText("Analyzing the JAR and its libraries…");
+        updateBuildAvailability();
+        moduleTask = moduleExecutor.submit(() -> {
+            try {
+                var result = ModuleDetector.detect(request);
+                Platform.runLater(() -> finishModuleDetection(generation, result, null, originalModules));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (IOException | RuntimeException e) {
+                Platform.runLater(() -> finishModuleDetection(generation, null, e.getMessage(), originalModules));
+            }
+        });
+    }
+
+    private void finishModuleDetection(long generation, ModuleDetector.Result result, String error, String originalModules) {
+        if (generation != moduleGeneration) return;
+        moduleAnalysisBusy = false;
+        detectModulesButton.setDisable(false);
+        detectModulesButton.setText("Detect");
+        updateBuildAvailability();
+        if (result == null) {
+            modulesHint.setText("Could not detect all modules. See details, fix dependencies, then Detect again.");
+            moduleDetails = error;
+        } else if (!addModulesField.getText().equals(originalModules)) {
+            modulesHint.setText("Your edits were kept. Click Detect to merge the detected modules.");
+            moduleDetails = result.details();
+        } else {
+            addModulesField.setText(ModuleDetector.merge(originalModules, detectedModules, result.modules()));
+            detectedModules = result.modules();
+            modulesHint.setText("Detected automatically. Add modules loaded through reflection or services if needed.");
+            moduleDetails = result.details();
+        }
+        setManagedAndVisible(moduleDetailsButton, true);
+    }
+
+    @FXML private void showModuleDetails(ActionEvent event) {
+        showCustomDialog("Module detection", "Module analysis", moduleDetails);
     }
 
     private String getFileExtension(String fileName) {
@@ -685,6 +838,16 @@ public class PackagerController {
 
         try {
             command.set(0, JdkLocator.resolve().toString());
+            String iconPath = getCommandOptionValue(command, "--icon");
+            if (!iconPath.isBlank() && IconConversionService.needsConversion(java.nio.file.Path.of(iconPath))) {
+                var converted = IconConversionService.convert(java.nio.file.Path.of(iconPath));
+                command.set(command.indexOf("--icon") + 1, converted.icon().toString());
+                Platform.runLater(() -> {
+                    if (iconField.getText().equals(iconPath)) iconField.setText(converted.icon().toString());
+                    iconHint.setText(converted.note());
+                    progressController.appendText(converted.note() + "\n");
+                });
+            }
             //在进度对话框中显示执行的命令
             String commandStr = formatCommandForDisplay(command);
             Platform.runLater(() -> {
@@ -790,16 +953,6 @@ public class PackagerController {
 
         if (!prebuiltAppImageSelected && !iconField.getText().isEmpty()) {
             String iconPath = iconField.getText();
-
-            if (iconPath.contains("(will be converted to ICO)")) {
-                iconPath = iconPath.replace("(will be converted to ICO)", "").trim();
-            }
-
-            String extension = getFileExtension(iconPath).toLowerCase();
-
-            if (JdkLocator.isWindows() && !extension.equals(".ico")) {
-                showCustomDialog("Icon Conversion", "Icon Conversion Needed", "The selected icon isnot in ICOformat. You need to convert it to ICOformat manually or implement automatic conversion.");
-            }
 
             command.add("--icon");
             command.add(iconPath);

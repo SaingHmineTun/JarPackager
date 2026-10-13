@@ -39,11 +39,14 @@ final class ToolCheckService {
         results.add(new Result("jpackage", packaging.ok && version >= 16, "Application images & installers", packaging.output + (home == null ? "" : "\n" + home.resolve("bin/jpackage" + suffix)), JDK_HELP, JDK_URL));
         ProbeResult jlink = home == null ? java : probe.run(home.resolve("bin/jlink" + suffix).toString(), "--version");
         results.add(new Result("jlink", jlink.ok, "Create a bundled Java runtime", jlink.output, JDK_HELP, JDK_URL));
+        ProbeResult jdeps = home == null ? java : probe.run(home.resolve("bin/jdeps" + suffix).toString(), "--version");
+        results.add(result("jdeps", "Automatic module detection", jdeps, JDK_HELP, JDK_URL));
         if (host == Host.WINDOWS) results.add(checkWix(version, probe));
         if (host == Host.MAC) {
             String systemHelp = "This tool ships with macOS. Install available macOS updates and restart. If the tool is missing or cannot run, repair your macOS installation using Apple's recovery instructions. JAR Packager does not install or modify system tools.";
             String systemUrl = "https://support.apple.com/guide/mac-help/reinstall-macos-mchlp1599/mac";
             results.add(result("hdiutil", "DMG disk images", probe.run("/usr/bin/hdiutil", "help"), systemHelp, systemUrl));
+            results.add(result("iconutil", "PNG to ICNS conversion", probe.run("/usr/bin/iconutil"), systemHelp, systemUrl));
             ProbeResult pkgbuild = probe.run("/usr/bin/pkgbuild");
             ProbeResult productbuild = probe.run("/usr/bin/productbuild");
             results.add(result("PKG tools", "pkgbuild & productbuild", new ProbeResult(pkgbuild.ok && productbuild.ok, pkgbuild.output + "\n" + productbuild.output), systemHelp, systemUrl));
@@ -127,10 +130,11 @@ final class ToolCheckService {
             String output;
             try (InputStream input = Files.newInputStream(log)) { output = new String(input.readNBytes(16000), StandardCharsets.UTF_8).strip(); }
             // Apple package builders have no version/help query; no arguments prints
-            // their usage with exit 1. Recognize only those two known system tools.
+            // their usage with exit 1. Recognize only these known system tools.
             boolean appleUsage = command.length == 1 && process.exitValue() == 1
                     && ((command[0].equals("/usr/bin/pkgbuild") && output.startsWith("Usage: pkgbuild "))
-                    || (command[0].equals("/usr/bin/productbuild") && output.startsWith("Usage: productbuild ")));
+                    || (command[0].equals("/usr/bin/productbuild") && output.startsWith("Usage: productbuild "))
+                    || (command[0].equals("/usr/bin/iconutil") && output.startsWith("Usage: iconutil ")));
             return new ProbeResult(process.exitValue() == 0 || appleUsage, output.isBlank() ? command[0] + " (exit " + process.exitValue() + ")" : output);
         } catch (IOException | InterruptedException | RuntimeException e) {
             if (e instanceof InterruptedException) Thread.currentThread().interrupt();

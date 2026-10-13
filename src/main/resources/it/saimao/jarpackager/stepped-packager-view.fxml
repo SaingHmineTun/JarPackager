@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Rectangle?>
 <HBox prefHeight="820" prefWidth="1040" styleClass="app-root" stylesheets="@style.css"
       xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="it.saimao.jarpackager.PackagerController">
     <VBox styleClass="sidebar" prefWidth="220" minWidth="220" maxWidth="220" spacing="12">
-        <Label text="J / P" styleClass="brand-mark"/>
+        <StackPane styleClass="brand-mark">
+            <ImageView fitWidth="60" fitHeight="60" preserveRatio="true" smooth="true">
+                <image>
+                    <Image url="@app_icon.png"/>
+                </image>
+                <clip>
+                    <Rectangle arcWidth="16" arcHeight="16" width="60" height="60"/>
+                </clip>
+            </ImageView>
+        </StackPane>
         <VBox spacing="6">
             <Label text="JAR Packager" styleClass="brand-title"/>
             <Label text="A polished finish for Java." styleClass="sidebar-caption"/>
@@ -18,8 +29,9 @@
         <Button fx:id="optionsNav" onAction="#showStep3" text="03   Build options" styleClass="nav-button" maxWidth="Infinity"/>
         <Region VBox.vgrow="ALWAYS"/>
         <VBox spacing="8" styleClass="sidebar-note">
-            <Label text="Made to feel native." styleClass="sidebar-note-title"/>
-            <Label text="From a single JAR to an app that feels at home." wrapText="true" styleClass="sidebar-caption"/>
+            <Label text="Small details.
+A better release." styleClass="sidebar-note-title"/>
+            <Label text="Native packages, thoughtfully assembled." wrapText="true" styleClass="sidebar-caption"/>
         </VBox>
         <Label text="POWERED BY JPACKAGE" styleClass="eyebrow"/>
     </VBox>
@@ -27,7 +39,7 @@
         <HBox alignment="CENTER_LEFT" spacing="18">
             <VBox spacing="6" HBox.hgrow="ALWAYS">
                 <Label text="Build something native." styleClass="app-title"/>
-                <Label text="Your application. Ready to share." styleClass="app-caption"/>
+                <Label text="Craft your release, from first detail to final package." styleClass="app-caption"/>
             </VBox>
             <VBox alignment="CENTER_RIGHT" spacing="6">
                 <Button fx:id="checkButton" onAction="#checkEnvironment" text="Check" styleClass="secondary-button"/>
@@ -117,44 +129,61 @@
                 </VBox>
             </HBox>
 
+            <VBox fx:id="iconSection" spacing="12" styleClass="icon-studio">
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <Label text="✦" styleClass="icon-symbol"/>
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label fx:id="iconLabel" text="Give your app a signature." styleClass="icon-title"/>
+                        <Label text="One image. Every icon size." styleClass="muted"/>
+                    </VBox>
+                </HBox>
+                <HBox fx:id="iconRow" spacing="8" alignment="CENTER_LEFT">
+                    <TextField fx:id="iconField" promptText="Choose an image or paste its path" HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="browseIconButton" onAction="#browseIcon" text="Choose" styleClass="secondary-button"/>
+                    <Button fx:id="convertIconButton" onAction="#convertIcon" text="Convert" styleClass="secondary-button"/>
+                </HBox>
+                <Label fx:id="iconHint" styleClass="icon-hint" wrapText="true"/>
+            </VBox>
+
             <GridPane hgap="14.0" styleClass="form-grid" vgap="8.0">
                 <columnConstraints>
                     <ColumnConstraints minWidth="145.0" prefWidth="145.0"/>
                     <ColumnConstraints hgrow="ALWAYS"/>
                 </columnConstraints>
 
-                <Label fx:id="iconLabel" styleClass="form-label" text="Icon" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                <HBox fx:id="iconRow" alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                    <TextField fx:id="iconField" HBox.hgrow="ALWAYS"/>
-                    <Button onAction="#browseIcon" styleClass="secondary-button" text="Browse"/>
-                </HBox>
+                <Label styleClass="form-label" text="Vendor" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <TextField fx:id="vendorField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
-                <Label styleClass="form-label" text="Vendor" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                <TextField fx:id="vendorField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                <Label styleClass="form-label" text="Copyright" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <TextField fx:id="copyrightField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 
-                <Label styleClass="form-label" text="Copyright" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                <TextField fx:id="copyrightField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                <Label styleClass="form-label" text="Description" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <TextField fx:id="descriptionField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
 
-                <Label styleClass="form-label" text="Description" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                <TextField fx:id="descriptionField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-
-                <Label styleClass="form-label" text="License" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                <Label styleClass="form-label" text="License" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
                     <TextField fx:id="licenseField" HBox.hgrow="ALWAYS"/>
                     <Button onAction="#browseLicense" styleClass="secondary-button" text="Browse"/>
                 </HBox>
 
-                <Label fx:id="addModulesLabel" styleClass="form-label" text="Add modules" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-                <TextField fx:id="addModulesField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                <Label fx:id="addModulesLabel" styleClass="form-label" text="Add modules" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                <VBox fx:id="modulesSection" spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <TextField fx:id="addModulesField" promptText="Detected from your JAR" HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="detectModulesButton" onAction="#detectModules" text="Detect" styleClass="secondary-button"/>
+                    </HBox>
+                    <Label fx:id="modulesHint" text="Modules are detected automatically after you choose a JAR." styleClass="muted" wrapText="true"/>
+                    <Button fx:id="moduleDetailsButton" onAction="#showModuleDetails" text="Analysis details" visible="false" managed="false" styleClass="secondary-button"/>
+                </VBox>
 
-                <Label fx:id="modulePathLabel" styleClass="form-label" text="Module path" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-                <HBox fx:id="modulePathRow" alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                <Label fx:id="modulePathLabel" styleClass="form-label" text="Module path" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                <HBox fx:id="modulePathRow" alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
                     <TextField fx:id="modulePathField" HBox.hgrow="ALWAYS"/>
                     <Button onAction="#browseModulePath" styleClass="secondary-button" text="Browse"/>
                 </HBox>
 
-                <Label fx:id="runtimeImageLabel" styleClass="form-label" text="Runtime image" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
-                <HBox fx:id="runtimeImageRow" alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                <Label fx:id="runtimeImageLabel" styleClass="form-label" text="Runtime image" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+                <HBox fx:id="runtimeImageRow" alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                     <TextField fx:id="runtimeImageField" HBox.hgrow="ALWAYS"/>
                     <Button onAction="#browseRuntimeImage" styleClass="secondary-button" text="Browse"/>
                 </HBox>
@@ -173,6 +202,19 @@
                     <Label styleClass="muted" text="Fine-tune the launch experience, then build your package." wrapText="true"/>
                 </VBox>
             </HBox>
+
+            <VBox styleClass="release-card" spacing="14">
+                <Label text="PACKAGE PREVIEW" styleClass="release-eyebrow"/>
+                <HBox alignment="CENTER_LEFT" spacing="14">
+                    <Label fx:id="summaryName" text="Your application" styleClass="release-name" wrapText="true" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <Label fx:id="summaryFormat" text="dmg" styleClass="format-badge"/>
+                </HBox>
+                <Separator/>
+                <VBox spacing="5">
+                    <Label text="OUTPUT LOCATION" styleClass="release-eyebrow"/>
+                    <Label fx:id="summaryDestination" text="" styleClass="release-path" wrapText="true"/>
+                </VBox>
+            </VBox>
 
             <GridPane fx:id="windowsInstallerOptionsGrid" hgap="14.0" styleClass="form-grid" vgap="8.0">
                 <columnConstraints>

@@ -1,242 +1,91 @@
-#JAR Packager Tool
+# JAR Packager
 
-A JavaFX desktop application that simplifies the process of packaging JAR files into native executables, installers, and application images using the `jpackage` tool.
+A JavaFX desktop app for turning Java applications into native packages with
+`jpackage`. A three-step workspace guides you through the source, identity/runtime,
+and build options, with a package summary before building.
 
-## Features
+## Build and run
 
-- **Step-by-Step Wizard Interface**: Intuitive three-step process for easy configuration
-- **JAR Analysis**: Automatically extracts main class and other information from JAR manifest
-- **Multiple Output Formats**: Supports EXE/MSI on Windows, DMG/PKG on macOS, and app-image packaging
-- **Installer from App Image**: Build EXE/MSI installers from an existing app-image folder
-- **Dynamic Java Options**: Add multiple Java runtime options with automatic quoting
-- **Icon Support**: Convert PNG/JPG images to ICO format and apply to your application
-- **Windows-Specific Options**: Configure shortcuts, menu entries, per-user installs, support/update URLs, and upgrade capabilities
-- **Real-time Progress Tracking**: View packaging progress and detailed output in a modal dialog
+Use JDK 25 or newer. JavaFX is supplied by Maven; a JavaFX-bundled JDK is not required.
 
-## Prerequisites
-
-- JDK 25 or higher to build/run this application; a full JDK with `jpackage` for packaging
-- `jpackage` tool (included in JDK 14+)
-
-### Step-by-Step Guide
-
-Before Step 1, choose the package type (`exe`/`msi` on Windows, `dmg`/`pkg` on macOS, or `app-image`) from the top-level Package Type selector.
-
-#### Step 1: Basic Information
-1. For EXE/MSI output, choose the source:
-   - From JAR
-   - From image folder
-2. Click "Browse" next to "JAR file" or "App image folder" to choose the source files
-3. The tool will automatically analyze the JAR and populate:
-   - Main Class (from JAR manifest)
-   - ApplicationName (based on JAR filename)
-   - Main JAR File path
-   - Input Directory (JAR file location)
-4. Review and modify the following fields if needed:
-   - Application Name
-   - App Version (optional)
-   - Destination Directory (wherethe packaged application will be saved)
-5. Click "Next" to proceed to Step 2
-
-<img width="876" height="733" alt="image" src="https://github.com/user-attachments/assets/16e65533-deff-413b-b0f2-982c74d02c6a" />
-
-
-#### Step 2: Advanced Options
-1. Icon File (optional):
-   - Click "Browse..." to select an icon
-   - Supports PNG, JPG, and ICO formats
-   - Non-ICO images willbe automatically converted
-2. Application Metadata (optional):
-   - Vendor
-   - Copyright
-   - Description
-   - License File
-3. Java Module System (optional):
-   - Add Modules (for modular applications)
-   - Module Path (directory containing modules)
-4. Click "Next >>" to proceed to Step3
-
-<img width="876" height="733" alt="image" src="https://github.com/user-attachments/assets/ca45d23e-6dbb-4d9f-bf3b-ac4f2c3346a6" />
-
-
-#### Step 3: Windows Options
-1. Windows Configuration:
-   - Upgrade UUID (for application updates)
-   - Menu Group (Start menu folder name)
-   - Help URL
-   - Update URL
-2. Windows Options (check/uncheck as needed):
-   - Create desktop shortcut
-   - Add to Windows Start menu
-   - Enable directory chooserin installer
-   - Install per user
-   - Ask users whether shortcuts should be created
-   - Create a console launcher
-3. Java Options Management:
-   - Enter Java runtime options in the text field (e.g., `-Xmx2g`, `-Dfile.encoding=UTF-8`)
-   - Click "Add" to add additional Java options
-   - Each option will be automatically quoted for proper execution
-   - Click "Remove" to delete unwanted options
-4. Click "Package" to start the packaging process
-
-<img width="876" height="733" alt="image" src="https://github.com/user-attachments/assets/a968b76c-c0ad-4986-ac57-258ab3818582" />
-
-
-### Packaging Process
-1. A progress dialog will appear showing real-time output
-2. The process may take a few minutes depending on your application size
-3. Upon completion, you'll see a success message with the output filelocation
-4. If packaging fails, detailed error information will be displayed in the progress dialog
-
-
-<img width="627" height="664" alt="image" src="https://github.com/user-attachments/assets/7fb32dad-4ad7-4873-88cf-35c7fe017fb0" />
-
-## Key Functionality
-
-### Java Options Management
-- Add multiple Java runtime options using the "Add" button
-- Each option is automatically quoted to ensure proper execution
-- Examples: `-Xmx2g`, `-Dfile.encoding=UTF-8`
-
-### Icon Conversion
-- Supports PNG, JPG, and ICO formats
-- Automatically converts non-ICO images to ICO format
-- Applies selected icon to the packaged application
-
-### Windows Options
-- Create desktop shortcuts
-- Add to Windows Start menu
-- Enable directory chooser in installers
-- Install per user
-- Prompt users before creating shortcuts
-- Create a console launcher
-- Set help/update URLs
-- Set upgrade UUID for application updates
-
-## Building Executables
-
-To create a native executable of the JAR Packager Tool itself:
-
-```bash
-mvn clean package
-jpackage --input target --name JAR-Packager --app-version 1.0 --main-class it.saimao.jarpackager.Main --main-jar jar-packager.jar --type exe --dest target
+```sh
+mvn javafx:run
+mvn test
+mvn package
 ```
 
-To create an application image instead of an installer, choose `app-image` in the Package Type field. The tool will run `jpackage --type app-image` and skip installer-only options such as shortcuts, Start menu entries, directory chooser, upgrade UUID, menu group, and license file.
+## Package an application
 
-To create an EXE/MSI from an existing app image, choose `exe` or `msi`, select `From image folder`, select the app-image folder, then package. The tool will run `jpackage --app-image <folder>` and skip JAR, launcher, module, and runtime-image creation options.
+1. Choose the output: **EXE/MSI** on Windows, **DMG/PKG** on macOS, or **app-image**.
+2. Select a JAR. The app reads its manifest and fills in the main class, application
+   name, input folder, and main JAR. Installers can also be built from an existing
+   application image (a `.app` bundle on macOS).
+3. Review the destination, name, and version. Add an icon, metadata, modules, or
+   custom runtime if needed.
+4. Review the package summary, set Java/Windows options, and click **Build package**.
+   The progress dialog shows the actual command, output, and any errors.
 
-## BuildingNativeExecutable with GraalVM
+Packages must be built on their target platform. Windows-only options are hidden
+and omitted on macOS. App-image and prebuilt-image modes omit incompatible options.
+Signing and notarization are not configured by this app.
 
-This project supports building native executables using GraalVM Native Image technology. This allows you to create a standalone executable that doesn't require a separate Java installation to run.
+### Destination
 
-### Prerequisites
+The destination starts at `<working-directory>/dist` and follows the source folder.
+For a JAR in `/home/example`, it defaults to `/home/example/dist`. For an existing
+app image, it defaults to a `dist` folder beside that image. A destination you
+enter or browse to explicitly is preserved when changing sources. The output
+folder need not exist yet; it is created during packaging.
 
-1. Install GraalVM (preferably Liberica NIK Full which includes JavaFX support)
-2. Set `GRAALVM_HOME` environment variable pointing to your GraalVM installation
-3. Install Native Image component:
-   ```bash
-   gu install native-image
-   ```
+### Icons and automatic conversion
 
-### Building the Native Executable
-
-You can build the native executable in two ways:
-
-#### Method 1: Using the provided batchscript (Windows)
-```cmd
-build-native.bat
-```
-
-#### Method 2: Manual Maven build
-```bash
-# Clean and build the project
-mvn clean package -DskipTests
-
-# Build the native image
-mvn -Pnative native:compile
-```
-
-The native executable will be created inthe `target` directory.
-
-### Notes
-
-- The first build might take considerable time (several minutes) as GraalVM needs to analyze and compile all dependencies
-- Subsequent builds will be faster due to caching
-- Generated executable will be platform-specific (Windows/Linux/macOS)
-
-##Troubleshooting
-
-### Common Issues
-
-1. **jpackage not found**: Ensure you're using JDK 14 or higher
-2. **Icon conversion failed**: Check that your image files are valid PNG or JPG files
-3. **Packaging fails**: Verify all paths are correct and accessible
-
-### Warning Messages
-
-Youmay see this warning when running the application:
-```
-WARNING: java.lang.System::load has been called by com.sun.glass.utils.NativeLibLoader
-```
-
-This is a JavaFX internal warning that can be resolved by adding the JVM argument:
-```
---enable-native-access=javafx.graphics
-```
-
-## LicenseThis project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Built with JavaFX
-- Uses the `jpackage` tool included in JDK 14+
-
-
-## macOS packaging and JDK selection
-
-Build `.dmg` and `.pkg` on macOS; jpackage does not cross-compile installers.
-Choose either format in Output, then package from a JAR or an existing `.app`
-image. Use an `.icns` icon on macOS (ICO conversion is Windows-only).
-Windows installer settings are hidden and omitted on macOS.
-Installers are unsigned unless signing is configured separately.
-
-The app automatically discovers the installed JDK using `JAVA_HOME`, the running
-JVM, resolved Java executables on PATH, and standard installation folders. There
-is no manual JDK selector. Check and packaging use tools from the same JDK home,
-so Oracle's limited Windows `javapath` shortcuts do not prevent direct invocation
-of `jpackage`. JavaFX is supplied by Maven; a JavaFX-bundled JDK is not required.
+- macOS: select **PNG or ICNS**. PNG is automatically converted into a multi-size
+  `.icns` file using macOS's built-in `iconutil`, directly from the app.
+- Windows: select **PNG, JPG, or ICO**. PNG/JPG is converted into `.ico`.
+- Paste an image path and click **Convert**, or let the app convert it when building.
+- Successful conversion updates the icon field to the new native icon. The original
+  selected **PNG is deleted only after the icon is successfully saved**. JPG files
+  are kept. Other PNG files in the folder are never removed.
+- Failed conversions keep the original image. If the source changes while conversion
+  is running, it is kept. If deletion fails, the app reports that the icon was saved
+  but the source could not be removed.
+- Existing icons are not overwritten: a numeric suffix is used when necessary.
+  Temporary iconset images are cleaned up after conversion.
+- The macOS converter preserves aspect ratio and transparency, creating standard
+  and Retina sizes up to 1024×1024. Use a high-resolution PNG for the best result.
 
 ## Environment check
 
-Click **Check** to inspect your packaging toolkit. Green rows mean the tool ran
-successfully; red rows explain what needs setup. Click a row to see details, and
-click a red row for installation steps and a link to the official installation
-page. After installing tools or changing environment variables, restart the app
-and check again. The Check button also turns green/red to summarize the result.
+Click **Check** to inspect installed tools. Green rows mean the tool ran successfully;
+red rows mean setup needs attention. Click a red row to open a custom dialog with
+installation steps and a link to the official guide. Green rows also show details.
+The Check button turns green/red to summarize the result.
 
-- All platforms: checks Java, the JDK compiler, jpackage, and jlink from the same JDK.
-- Windows: checks WiX for EXE/MSI output. WiX 3 requires both candle and light;
-  modern WiX requires JDK 24 or newer. Standard WiX and global .NET tool folders
-  are discovered and shared with the packaging subprocess.
-- macOS: checks hdiutil, pkgbuild, productbuild, and Xcode Command Line Tools
-  (including SetFile). Xcode tools enable custom DMG icons and signing setup.
-  Plain unsigned packages may still work without Xcode tools. Signing certificates
-  are separate and signing is not configured by this app.
+| Platform | Checks |
+| --- | --- |
+| All | Java, JDK compiler, jpackage, and jlink from the same JDK |
+| Windows | WiX for EXE/MSI: candle + light for WiX 3, or modern WiX with JDK 24+ |
+| macOS | hdiutil, pkgbuild, productbuild, iconutil, and Xcode Command Line Tools / SetFile |
 
-The check covers tool availability, not whether a particular JAR, icon, or
-installer configuration is valid. Missing WiX does not prevent app-image output.
+WiX is not needed for app-image output. Xcode tools enable custom DMG icons and
+signing setup; plain unsigned packages can work without them. Signing certificates
+are separate. Checks cover tool availability, not whether a particular application
+or installer configuration is valid.
 
-## Interface and destination
+### Automatic JDK discovery
 
-The three-step workspace separates application details, identity/runtime, and
-build options. Navigation and build buttons stay visible while forms scroll.
-The destination starts at `<working-directory>/dist` and follows the source
-folder: selecting a JAR in `/home/example` defaults to `/home/example/dist`.
-For an existing app image, it defaults to a `dist` folder beside that image.
-A destination you enter or browse to explicitly is preserved when changing the
-source. The output folder is created during packaging; it need not exist yet.
+There is no manual JDK selector. The app discovers a full JDK from `JAVA_HOME`, the
+running JVM, resolved Java executables on PATH, and standard vendor installation
+folders. Check and packaging use the same discovery logic. Commands are invoked
+by their full paths, avoiding dependence on Oracle's limited Windows `javapath`
+shortcuts. Standard WiX and global .NET tool folders are also discovered and shared
+with the packaging subprocess.
 
-Prerequisite references: [Oracle packaging overview](https://docs.oracle.com/en/java/javase/25/jpackage/packaging-overview.html),
-[WiX installation](https://wixtoolset.org/docs/intro/), and
+If a tool is missing, follow its red-row instructions. After installing tools or
+changing environment variables, restart the app and check again. To make Oracle
+JDK tools callable in Command Prompt too, set `JAVA_HOME` to the JDK home (for example
+`C:\Program Files\Java\jdk-27`), add `%JAVA_HOME%\bin` to PATH, and open a new prompt.
+
+References: [Oracle packaging prerequisites](https://docs.oracle.com/en/java/javase/25/jpackage/packaging-overview.html),
+[WiX installation](https://wixtoolset.org/docs/intro/),
 [Apple Command Line Tools](https://developer.apple.com/documentation/xcode/installing-the-command-line-tools/).

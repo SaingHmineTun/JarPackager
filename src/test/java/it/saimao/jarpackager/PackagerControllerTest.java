@@ -64,6 +64,21 @@ class PackagerControllerTest {
                     snapshot(root, "step-" + step);
                 }
             }
+            var generationField = PackagerController.class.getDeclaredField("moduleGeneration");
+            generationField.setAccessible(true);
+            long generation = generationField.getLong(loader.getController());
+            var finish = PackagerController.class.getDeclaredMethod("finishModuleDetection", long.class, ModuleDetector.Result.class, String.class, String.class);
+            finish.setAccessible(true);
+            TextField modules = (TextField) nodes.get("addModulesField");
+            modules.setText("jdk.crypto.ec");
+            var detected = new ModuleDetector.Result(List.of("java.base", "java.sql"), "Test analysis");
+            finish.invoke(loader.getController(), generation, detected, null, "jdk.crypto.ec");
+            assertEquals("jdk.crypto.ec,java.base,java.sql", modules.getText());
+            finish.invoke(loader.getController(), generation - 1, new ModuleDetector.Result(List.of("java.desktop"), "Stale result"), null, modules.getText());
+            assertEquals("jdk.crypto.ec,java.base,java.sql", modules.getText());
+            modules.setText("java.xml");
+            finish.invoke(loader.getController(), generation, detected, null, "previous text");
+            assertEquals("java.xml", modules.getText());
             var results = List.of(
                     new ToolCheckService.Result("JDK", true, "Java application tools", "JDK 27", ToolCheckService.JDK_HELP, ToolCheckService.JDK_URL),
                     new ToolCheckService.Result("jpackage", true, "Application images & installers", "27", ToolCheckService.JDK_HELP, ToolCheckService.JDK_URL),

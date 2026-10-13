@@ -10,9 +10,9 @@
 .label { -fx-text-fill: #263245; }
 .sidebar { -fx-background-color: #182435; -fx-padding: 32 22 26 22; }
 .brand-mark {
-    -fx-background-color: #cdddff; -fx-background-radius: 13;
-    -fx-text-fill: #1b355e; -fx-font-size: 19px; -fx-font-weight: bold;
-    -fx-padding: 12 16; -fx-max-width: 74;
+    -fx-background-color: #cdddff; -fx-background-radius: 16;
+    -fx-min-width: 60; -fx-min-height: 60; -fx-max-width: 60; -fx-max-height: 60;
+    -fx-padding: 0;
 }
 .brand-title { -fx-text-fill: #f9fafc; -fx-font-size: 21px; -fx-font-weight: bold; }
 .sidebar-caption { -fx-text-fill: #a4b1c4; -fx-font-size: 12px; -fx-line-spacing: 4; }
@@ -95,3 +95,28 @@
 .tool-missing, .button.check-missing { -fx-background-color: #fff0ed; -fx-border-color: #edb9b0; -fx-text-fill: #a3372c; }
 .tool-missing:hover, .button.check-missing:hover { -fx-background-color: #fbe0d9; }
 .progress-bar, .progress-indicator { -fx-accent: #365dd8; }
+
+/* Icon studio and release preview share the restrained blue accent. */
+.icon-studio {
+    -fx-padding: 16; -fx-background-color: #f0f4fc;
+    -fx-background-radius: 12; -fx-border-color: #dce5f6; -fx-border-radius: 12;
+}
+.icon-symbol {
+    -fx-font-size: 27px; -fx-text-fill: #365dd8; -fx-alignment: center;
+    -fx-background-color: #ffffff; -fx-background-radius: 12;
+    -fx-min-width: 46; -fx-min-height: 46;
+}
+.icon-title { -fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #253b60; }
+.icon-hint { -fx-font-size: 11px; -fx-text-fill: #596e90; }
+.release-card {
+    -fx-padding: 22; -fx-background-color: linear-gradient(to bottom right, #223653, #304b70);
+    -fx-background-radius: 12;
+}
+.release-eyebrow { -fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #aec2e0; }
+.release-name { -fx-font-size: 25px; -fx-font-weight: bold; -fx-text-fill: #ffffff; }
+.release-path { -fx-font-size: 12px; -fx-text-fill: #d9e4f4; }
+.format-badge {
+    -fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #1c365d;
+    -fx-background-color: #d9e6ff; -fx-background-radius: 20; -fx-padding: 7 14;
+}
+.release-card .separator .line { -fx-border-color: #536783 transparent transparent transparent; }
