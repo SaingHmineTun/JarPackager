@@ -13,6 +13,10 @@ class ModuleDetectorTest {
     @TempDir Path temp;
 
     private Path fixture(String name, String source, Path dependency, Path output) throws Exception {
+        return fixture(name, source, dependency, output, null);
+    }
+
+    private Path fixture(String name, String source, Path dependency, Path output, String descriptor) throws Exception {
         Path project = Files.createDirectories(temp.resolve("source-" + name));
         Path java = Files.writeString(project.resolve(name + ".java"), source);
         Path classes = Files.createDirectories(project.resolve("classes"));
@@ -20,6 +24,7 @@ class ModuleDetectorTest {
                 "-d", classes.toString()));
         if (dependency != null) command.addAll(List.of("-cp", dependency.toString()));
         command.add(java.toString());
+        if (descriptor != null) command.add(Files.writeString(project.resolve("module-info.java"), descriptor).toString());
         Process compiler = new ProcessBuilder(command).redirectErrorStream(true).redirectOutput(project.resolve("compile.log").toFile()).start();
         try {
             assertTrue(compiler.waitFor(30, TimeUnit.SECONDS));
@@ -53,6 +58,15 @@ class ModuleDetectorTest {
         Files.delete(dependency);
         IOException error = assertThrows(IOException.class, () -> ModuleDetector.detect(new ModuleDetector.Request(app, input, "", null)));
         assertTrue(error.getMessage().contains("dependencies"), error.getMessage());
+    }
+
+    @Test void resolvesNamedDependenciesFromModulePath() throws Exception {
+        Path input = Files.createDirectories(temp.resolve("input"));
+        Path library = fixture("Library", "package example; public class Library { public static String value() { return java.sql.DriverManager.class.getName(); } }",
+                null, temp.resolve("modules/library.jar"), "module example.library { requires java.sql; exports example; }");
+        Path app = fixture("App", "public class App { public static void main(String[] args) { System.out.println(example.Library.value()); } }", library, input.resolve("app.jar"));
+        var result = ModuleDetector.detect(new ModuleDetector.Request(app, input, library.getParent().toString(), input.resolve("dist")));
+        assertTrue(result.modules().contains("example.library"), result.details());
     }
 
     @Test void doesNotUseOldPackagesOrHiddenJarsAsDependencies() throws Exception {

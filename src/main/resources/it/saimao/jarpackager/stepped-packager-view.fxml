@@ -3,21 +3,15 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.Rectangle?>
 <HBox prefHeight="820" prefWidth="1040" styleClass="app-root" stylesheets="@style.css"
       xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="it.saimao.jarpackager.PackagerController">
     <VBox styleClass="sidebar" prefWidth="220" minWidth="220" maxWidth="220" spacing="12">
-        <StackPane styleClass="brand-mark">
-            <ImageView fitWidth="60" fitHeight="60" preserveRatio="true" smooth="true">
-                <image>
-                    <Image url="@app_icon.png"/>
-                </image>
-                <clip>
-                    <Rectangle arcWidth="16" arcHeight="16" width="60" height="60"/>
-                </clip>
-            </ImageView>
-        </StackPane>
+        <ImageView fitWidth="112" fitHeight="112" preserveRatio="true" smooth="true" styleClass="brand-mark">
+            <image>
+                <Image url="@app_icon.png"/>
+            </image>
+        </ImageView>
         <VBox spacing="6">
             <Label text="JAR Packager" styleClass="brand-title"/>
             <Label text="A polished finish for Java." styleClass="sidebar-caption"/>

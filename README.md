@@ -54,6 +54,26 @@ folder need not exist yet; it is created during packaging.
 - The macOS converter preserves aspect ratio and transparency, creating standard
   and Retina sizes up to 1024×1024. Use a high-resolution PNG for the best result.
 
+### Automatic Java modules
+
+**Add modules** is filled automatically using `jdeps` from the same installed JDK
+used for packaging. Selecting a JAR or changing its input folder, main JAR, or
+module path refreshes the analysis in the background. The app scans the main JAR
+and dependency JARs in the input folder, including `lib/`, while excluding the
+output folder. Named modules on **Module path** are included in resolution.
+
+You can edit the detected list or click **Detect** to scan again after replacing
+files on disk. Manual additions are preserved, and results from an old selection
+cannot overwrite a newer one. Multi-release JARs are analyzed for the packaging
+JDK's version. Detection is skipped when using a prebuilt app image or runtime.
+
+If libraries are missing or analysis fails, **Analysis details** explains the issue;
+no incomplete defaults are inserted. Nested-JAR launchers (such as Spring Boot
+archives) require extracting libraries and appropriate packaging configuration.
+Static analysis cannot reliably discover modules loaded only through reflection,
+service providers, or other dynamic loading: add those manually if your app needs
+them, and test the packaged application. See the [jdeps documentation](https://docs.oracle.com/en/java/javase/25/docs/specs/man/jdeps.html).
+
 ## Environment check
 
 Click **Check** to inspect installed tools. Green rows mean the tool ran successfully;
@@ -63,7 +83,7 @@ The Check button turns green/red to summarize the result.
 
 | Platform | Checks |
 | --- | --- |
-| All | Java, JDK compiler, jpackage, and jlink from the same JDK |
+| All | Java, JDK compiler, jpackage, jlink, and jdeps from the same JDK |
 | Windows | WiX for EXE/MSI: candle + light for WiX 3, or modern WiX with JDK 24+ |
 | macOS | hdiutil, pkgbuild, productbuild, iconutil, and Xcode Command Line Tools / SetFile |
 

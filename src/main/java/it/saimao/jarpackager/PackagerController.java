@@ -749,8 +749,10 @@ public class PackagerController {
             modulesHint.setText("Your edits were kept. Click Detect to merge the detected modules.");
             moduleDetails = result.details();
         } else {
+            String manualModules = ModuleDetector.merge(originalModules, detectedModules, List.of());
             addModulesField.setText(ModuleDetector.merge(originalModules, detectedModules, result.modules()));
-            detectedModules = result.modules();
+            List<String> manualNames = List.of(manualModules.split(","));
+            detectedModules = result.modules().stream().filter(name -> !manualNames.contains(name)).toList();
             modulesHint.setText("Detected automatically. Add modules loaded through reflection or services if needed.");
             moduleDetails = result.details();
         }

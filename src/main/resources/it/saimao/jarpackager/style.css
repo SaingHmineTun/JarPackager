@@ -9,11 +9,7 @@
 .app-root { -fx-background-color: #f5f4f0; }
 .label { -fx-text-fill: #263245; }
 .sidebar { -fx-background-color: #182435; -fx-padding: 32 22 26 22; }
-.brand-mark {
-    -fx-background-color: #cdddff; -fx-background-radius: 16;
-    -fx-min-width: 60; -fx-min-height: 60; -fx-max-width: 60; -fx-max-height: 60;
-    -fx-padding: 0;
-}
+.brand-mark { -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.28), 7, 0.1, 0, 2); }
 .brand-title { -fx-text-fill: #f9fafc; -fx-font-size: 21px; -fx-font-weight: bold; }
 .sidebar-caption { -fx-text-fill: #a4b1c4; -fx-font-size: 12px; -fx-line-spacing: 4; }
 .eyebrow { -fx-text-fill: #8395af; -fx-font-size: 10px; -fx-font-weight: bold; }
